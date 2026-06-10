@@ -1,0 +1,50 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}
+{% if not object.customer %}
+<form method="post" action="{% url 'desk:inquiry_create_customer' object.pk %}" style="display:inline">{% csrf_token %}
+  <button type="submit" class="se-btn se-btn-secondary">Save as customer</button>
+</form>
+{% else %}
+<a href="{% url 'desk:customer_detail' object.customer.pk %}" class="se-btn se-btn-secondary">View customer</a>
+{% endif %}
+<a href="{% url 'desk:inquiry_invoice' object.pk %}" class="se-btn se-btn-primary">Create invoice</a>
+{% endblock %}
+{% block content %}
+<div class="se-grid-2">
+  <div class="se-card se-card-pad">
+    <h2 class="se-section-title" style="margin-top:0">Lead details</h2>
+    <div class="se-detail-list">
+      <p><strong>Type</strong> {{ object.get_inquiry_type_display }}</p>
+      {% if object.customer %}
+      <p><strong>Customer</strong> <a href="{% url 'desk:customer_detail' object.customer.pk %}">{{ object.customer.company_name }}</a></p>
+      {% endif %}
+      <p><strong>Name</strong> {{ object.name }}</p>
+      <p><strong>Company</strong> {{ object.company|default:"—" }}</p>
+      <p><strong>Email</strong> <a href="mailto:{{ object.email }}">{{ object.email }}</a></p>
+      <p><strong>Phone</strong> {{ object.phone|default:"—" }}</p>
+      <p><strong>Route</strong> {{ object.origin|default:"—" }} → {{ object.destination|default:"—" }}</p>
+      <p><strong>Product</strong> {{ object.product.title|default:"—" }}</p>
+      <p><strong>Incoterms</strong> {{ object.incoterms|default:"—" }}</p>
+      <p><strong>Volume</strong> {{ object.volume|default:"—" }}</p>
+      <p><strong>Message</strong></p>
+      <div class="se-message-box">{{ object.message }}</div>
+      <p class="se-muted">Received {{ object.created_at|date:"M j, Y H:i" }}</p>
+    </div>
+  </div>
+  <div class="se-card se-card-pad">
+    <h2 class="se-section-title" style="margin-top:0">Update status</h2>
+    <form method="post" class="se-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="se-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      </div>
+      {% endfor %}
+      <button type="submit" class="se-btn se-btn-primary">Save status</button>
+    </form>
+  </div>
+</div>
+<a href="{% url 'desk:inquiry_list' %}" class="se-btn se-btn-secondary">← All inquiries</a>
+{% endblock %}

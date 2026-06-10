@@ -1,0 +1,32 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}<a href="{% url 'desk:invoice_add' %}" class="se-btn se-btn-primary">+ Create invoice</a>{% endblock %}
+{% block content %}
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr><th>Number</th><th>Client</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Number"><strong>{{ item.invoice_number }}</strong></td>
+          <td data-label="Client">{{ item.client_name }}{% if item.client_company %}<br><small>{{ item.client_company }}</small>{% endif %}</td>
+          <td data-label="Date">{{ item.issue_date|date:"M j, Y" }}</td>
+          <td data-label="Total">{{ item.currency }} {{ item.total }}</td>
+          <td data-label="Status"><span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:invoice_detail' item.pk %}" class="se-btn se-btn-sm se-btn-primary">View</a>
+              <a href="{% url 'desk:invoice_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="se-empty">No invoices yet. <a href="{% url 'desk:invoice_add' %}">Create one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

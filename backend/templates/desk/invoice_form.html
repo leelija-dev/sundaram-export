@@ -1,0 +1,41 @@
+{% extends "desk/base.html" %}
+{% block content %}
+<form method="post" class="se-form">
+  {% csrf_token %}
+  <div class="se-card se-card-pad" style="margin-bottom:1.25rem">
+    <h2 class="se-section-title" style="margin-top:0">Client &amp; dates</h2>
+    <div class="se-grid-2">
+      {% for field in form %}
+      <div class="se-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="se-card se-card-pad">
+    <h2 class="se-section-title" style="margin-top:0">Line items</h2>
+    {{ formset.management_form }}
+    <div class="se-table-wrap">
+      <table class="se-table">
+        <thead><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Remove</th></tr></thead>
+        <tbody>
+          {% for f in formset %}
+          <tr>
+            <td>{{ f.id }}{{ f.description }}{{ f.description.errors }}</td>
+            <td style="width:6rem">{{ f.quantity }}</td>
+            <td style="width:8rem">{{ f.unit_price }}</td>
+            <td>{% if f.DELETE %}{{ f.DELETE }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="se-form-actions">
+    <button type="submit" class="se-btn se-btn-primary">Save invoice</button>
+    <a href="{% url 'desk:invoice_list' %}" class="se-btn se-btn-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

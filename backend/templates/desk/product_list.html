@@ -1,0 +1,31 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}<a href="{% url 'desk:product_add' %}" class="se-btn se-btn-primary">+ Add product</a>{% endblock %}
+{% block content %}
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr><th>Title</th><th>Category</th><th>HS code</th><th>Published</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Title"><strong>{{ item.title }}</strong><br><small>{{ item.slug }}</small></td>
+          <td data-label="Category">{{ item.get_category_display }}</td>
+          <td data-label="HS code">{{ item.hs_code|default:"—" }}</td>
+          <td data-label="Published">{% if item.is_published %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:product_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+              <a href="{% url 'desk:product_delete' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="se-empty">No products yet. <a href="{% url 'desk:product_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

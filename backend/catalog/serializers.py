@@ -4,6 +4,8 @@ from .models import ExportCountry, MarketRegion, Office, Product
 
 
 class ProductListSerializer(serializers.ModelSerializer):
+    category = serializers.SlugField(source="category.slug", read_only=True)
+
     class Meta:
         model = Product
         fields = [

@@ -20,9 +20,10 @@ from documents.models import ExportReport, Invoice
 from documents.services import generate_report_data
 from inquiries.models import Inquiry
 
-from master.models import Currency
+from master.models import Category, Currency
 
 from .forms import (
+    CategoryForm,
     CurrencyForm,
     CustomerForm,
     ExportCountryForm,
@@ -597,6 +598,62 @@ class InvoiceDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
         ctx["nav_section"] = "invoices"
         ctx["page_title"] = "Delete invoice"
         ctx["cancel_url"] = reverse("desk:invoice_list")
+        return ctx
+
+
+# ——— Categories ———
+
+class CategoryListView(DeskMixin, ListView):
+    model = Category
+    template_name = "desk/category_list.html"
+    context_object_name = "items"
+    paginate_by = 25
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "categories"
+        ctx["page_title"] = "Categories"
+        return ctx
+
+
+class CategoryCreateView(DeskMixin, DeskSuccessMessageMixin, CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:category_list")
+    success_message = "Category added."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "categories"
+        ctx["page_title"] = "Add category"
+        return ctx
+
+
+class CategoryUpdateView(DeskMixin, DeskSuccessMessageMixin, UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:category_list")
+    success_message = "Category updated."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "categories"
+        ctx["page_title"] = f"Edit: {self.object.name}"
+        return ctx
+
+
+class CategoryDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
+    model = Category
+    template_name = "desk/confirm_delete.html"
+    success_url = reverse_lazy("desk:category_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "categories"
+        ctx["page_title"] = "Delete category"
+        ctx["cancel_url"] = reverse("desk:category_list")
         return ctx
 
 

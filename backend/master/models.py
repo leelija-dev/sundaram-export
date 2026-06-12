@@ -15,3 +15,19 @@ class Currency(models.Model):
 
     def __str__(self):
         return f"{self.code} — {self.name}"
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=64, unique=True, verbose_name="Category name")
+    slug = models.SlugField(max_length=64, unique=True)
+    description = models.TextField(blank=True, verbose_name="Description")
+    is_active = models.BooleanField(default=True, verbose_name="Active")
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return self.name

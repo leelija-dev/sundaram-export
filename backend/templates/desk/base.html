@@ -40,6 +40,9 @@
         <a href="{% url 'desk:office_list' %}" class="se-nav-link {% if nav_section == 'offices' %}active{% endif %}">
           <span class="se-nav-icon">⌂</span> Offices
         </a>
+        <a href="{% url 'desk:currency_list' %}" class="se-nav-link {% if nav_section == 'currencies' %}active{% endif %}">
+          <span class="se-nav-icon">$</span> Currencies
+        </a>
         <span class="se-nav-label">Sales</span>
         <a href="{% url 'desk:customer_list' %}" class="se-nav-link {% if nav_section == 'customers' %}active{% endif %}">
           <span class="se-nav-icon">👤</span> Customers

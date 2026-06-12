@@ -25,17 +25,17 @@
         <tr>
           <td>{{ line.description }}</td>
           <td>{{ line.quantity }}</td>
-          <td>{{ invoice.currency }} {{ line.unit_price }}</td>
-          <td>{{ invoice.currency }} {{ line.amount }}</td>
+          <td>{{ invoice.currency.symbol }} {{ line.unit_price }}</td>
+          <td>{{ invoice.currency.symbol }} {{ line.amount }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  <div style="margin-top:1.25rem; text-align:right; max-width:16rem; margin-left:auto">
-    <p>Subtotal: <strong>{{ invoice.currency }} {{ invoice.subtotal }}</strong></p>
-    <p>Tax ({{ invoice.tax_rate }}%): {{ invoice.currency }} {{ invoice.tax_amount }}</p>
-    <p style="font-size:1.15rem; margin-top:0.5rem">Total: <strong>{{ invoice.currency }} {{ invoice.total }}</strong></p>
+  <div style="margin-top:1.25rem; text-align:left; max-width:12rem; margin-left:auto">
+    <p style="display:flex; justify-content:space-between">Subtotal: <strong>{{ invoice.currency.symbol }}{{ invoice.subtotal }}</strong></p>
+    <p style="display:flex; justify-content:space-between">Tax ({{ invoice.tax_rate }}%): <span>{{ invoice.currency.symbol }}{{ invoice.tax_amount }}</span></p>
+    <p style="display:flex; justify-content:space-between; font-size:1.15rem; margin-top:0.5rem">Total: <strong>{{ invoice.currency.symbol }}{{ invoice.total }}</strong></p>
   </div>
   {% if invoice.notes %}<p style="margin-top:1rem"><strong>Notes:</strong> {{ invoice.notes }}</p>{% endif %}
 </div>

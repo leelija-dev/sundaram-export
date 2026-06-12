@@ -53,7 +53,7 @@
         <tr>
           <td>{{ inv.invoice_number }}</td>
           <td>{{ inv.issue_date|date:"M j, Y" }}</td>
-          <td>{{ inv.currency }} {{ inv.total }}</td>
+          <td>{{ inv.currency.symbol }} {{ inv.total }}</td>
           <td><a href="{% url 'desk:invoice_detail' inv.pk %}">View</a></td>
         </tr>
         {% endfor %}

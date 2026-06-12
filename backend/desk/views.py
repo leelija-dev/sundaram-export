@@ -20,7 +20,10 @@ from documents.models import ExportReport, Invoice
 from documents.services import generate_report_data
 from inquiries.models import Inquiry
 
+from master.models import Currency
+
 from .forms import (
+    CurrencyForm,
     CustomerForm,
     ExportCountryForm,
     ExportReportForm,
@@ -594,6 +597,62 @@ class InvoiceDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
         ctx["nav_section"] = "invoices"
         ctx["page_title"] = "Delete invoice"
         ctx["cancel_url"] = reverse("desk:invoice_list")
+        return ctx
+
+
+# ——— Currencies ———
+
+class CurrencyListView(DeskMixin, ListView):
+    model = Currency
+    template_name = "desk/currency_list.html"
+    context_object_name = "items"
+    paginate_by = 25
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "currencies"
+        ctx["page_title"] = "Currencies"
+        return ctx
+
+
+class CurrencyCreateView(DeskMixin, DeskSuccessMessageMixin, CreateView):
+    model = Currency
+    form_class = CurrencyForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:currency_list")
+    success_message = "Currency added."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "currencies"
+        ctx["page_title"] = "Add currency"
+        return ctx
+
+
+class CurrencyUpdateView(DeskMixin, DeskSuccessMessageMixin, UpdateView):
+    model = Currency
+    form_class = CurrencyForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:currency_list")
+    success_message = "Currency updated."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "currencies"
+        ctx["page_title"] = f"Edit: {self.object.code}"
+        return ctx
+
+
+class CurrencyDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
+    model = Currency
+    template_name = "desk/confirm_delete.html"
+    success_url = reverse_lazy("desk:currency_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "currencies"
+        ctx["page_title"] = "Delete currency"
+        ctx["cancel_url"] = reverse("desk:currency_list")
         return ctx
 
 

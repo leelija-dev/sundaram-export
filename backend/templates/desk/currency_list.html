@@ -1,0 +1,32 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}<a href="{% url 'desk:currency_add' %}" class="se-btn se-btn-primary">+ Add currency</a>{% endblock %}
+{% block content %}
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr><th>Code</th><th>Name</th><th>Symbol</th><th>Active</th><th>Order</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Code"><strong>{{ item.code }}</strong></td>
+          <td data-label="Name">{{ item.name }}</td>
+          <td data-label="Symbol">{{ item.symbol }}</td>
+          <td data-label="Active">{% if item.is_active %}<span class="se-badge se-badge-draft" style="background:#d4edda;color:#155724">Yes</span>{% else %}<span class="se-badge se-badge-cancelled">No</span>{% endif %}</td>
+          <td data-label="Order">{{ item.sort_order }}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:currency_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+              <a href="{% url 'desk:currency_delete' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="se-empty">No currencies yet. <a href="{% url 'desk:currency_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

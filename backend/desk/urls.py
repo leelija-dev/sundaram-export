@@ -6,6 +6,11 @@ from . import views
 app_name = "desk"
 
 urlpatterns = [
+    # Currencies
+    path("currencies/", views.CurrencyListView.as_view(), name="currency_list"),
+    path("currencies/add/", views.CurrencyCreateView.as_view(), name="currency_add"),
+    path("currencies/<int:pk>/edit/", views.CurrencyUpdateView.as_view(), name="currency_edit"),
+    path("currencies/<int:pk>/delete/", views.CurrencyDeleteView.as_view(), name="currency_delete"),
     path("", views.DashboardView.as_view(), name="dashboard"),
     path("login/", auth_views.LoginView.as_view(template_name="desk/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="desk:login"), name="logout"),

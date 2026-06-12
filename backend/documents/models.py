@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Max
 
 from inquiries.models import Inquiry
+from master.models import Currency
 
 
 class Invoice(models.Model):
@@ -24,7 +25,14 @@ class Invoice(models.Model):
     client_address = models.TextField(blank=True)
     issue_date = models.DateField()
     due_date = models.DateField(null=True, blank=True)
-    currency = models.CharField(max_length=8, default="USD")
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name="Currency",
+        help_text="Select a currency from the master list",
+    )
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT)
     notes = models.TextField(blank=True)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0"))

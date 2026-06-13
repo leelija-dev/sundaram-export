@@ -1,3 +1,5 @@
+// src/components/contact-form.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -75,9 +77,12 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
 
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-secondary/30 bg-secondary/10 p-6 text-center sm:p-8">
-        <p className="text-lg font-semibold text-primary">Thank you!</p>
-        <p className="mt-2 text-sm text-foreground/90">
+      <div className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/5 to-transparent p-8 text-center shadow-lg">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-3xl">
+          ✓
+        </div>
+        <p className="text-xl font-bold text-foreground">Thank you!</p>
+        <p className="mt-2 text-sm text-muted">
           We received your {variant === "quote" ? "quote request" : "message"} and will respond within
           one business day.
         </p>
@@ -86,7 +91,8 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot */}
       <input
         type="text"
         name="website"
@@ -95,73 +101,69 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
         className="absolute -left-[9999px] h-0 w-0 opacity-0"
         aria-hidden="true"
       />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+
+      {/* Row 1: Name + Company */}
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Full name" name="name" required />
         <Field label="Company" name="company" required />
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+
+      {/* Row 2: Email + Phone */}
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Email" name="email" type="email" required />
         <Field label="Phone" name="phone" type="tel" />
       </div>
+
+      {/* Quote-specific fields – landscape layout */}
       {variant === "quote" && (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Origin country / city" name="origin" required />
             {countries.length > 0 ? (
-              <div>
-                <label htmlFor="destination" className="block text-sm font-medium text-foreground/90">
-                  Destination country
-                </label>
-                <select id="destination" name="destination" required className={inputClass}>
-                  <option value="" disabled>
-                    Select destination
-                  </option>
-                  {countries.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.subtitle ? `${c.name} (${c.subtitle})` : c.name}
-                    </option>
-                  ))}
-                  <option value="other">Other — specify in message</option>
-                </select>
-              </div>
+              <SelectField
+                label="Destination country"
+                name="destination"
+                options={countries.map((c) => ({
+                  value: c.name,
+                  label: c.subtitle ? `${c.name} (${c.subtitle})` : c.name,
+                }))}
+                required
+              />
             ) : (
               <Field label="Destination country / city" name="destination" required />
             )}
           </div>
-          <div>
-            <label htmlFor="product" className="block text-sm font-medium text-foreground/90">
-              Product line (if applicable)
-            </label>
-            <select
-              id="product"
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SelectField
+              label="Product line"
               name="product"
-              className={inputClass}
-              disabled={catalogLoading}
-            >
-              <option value="">
-                {catalogLoading ? "Loading products…" : "Not applicable / not sure"}
-              </option>
-              {products.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
+              options={products.map((p) => ({ value: p.slug, label: p.title }))}
+              loading={catalogLoading}
+              placeholder="Not applicable / not sure"
+            />
+            <Field label="Incoterms (if known)" name="incoterms" placeholder="e.g. FOB Mumbai, CIF Houston" />
           </div>
-          <Field label="Incoterms (if known)" name="incoterms" placeholder="e.g. FOB Mumbai, CIF Houston" />
-          <Field label="Estimated volume" name="volume" placeholder="e.g. 1×40ft FCL, 500 kg air" />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Estimated volume" name="volume" placeholder="e.g. 1×40ft FCL, 500 kg air" />
+            <div /> {/* Spacer */}
+          </div>
         </>
       )}
+
+      {/* Message – full width, reduced height for landscape */}
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-foreground/90">
+        <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-foreground/90">
           {variant === "quote" ? "Product / cargo details & timeline" : "Message"}
+          <span className="ml-1 text-accent">*</span>
         </label>
         <textarea
           id="message"
           name="message"
-          rows={4}
+          rows={3}
           required
-          className={cn(inputClass, "resize-y min-h-[6rem]")}
+          className={cn(inputClass, "resize-y")}
           placeholder={
             variant === "quote"
               ? "Product specs, packaging, certifications needed, target ship date..."
@@ -169,28 +171,36 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
           }
         />
       </div>
+
+      {/* Error message */}
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
           {error}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={submitting || catalogLoading}
-        className="touch-target w-full rounded-lg bg-secondary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-secondary/90 disabled:opacity-60 lg:w-auto lg:min-h-0 lg:px-8"
-      >
-        {submitting ? "Sending…" : variant === "quote" ? "Submit quote request" : "Send message"}
-      </button>
-      <p className="text-xs text-muted">
-        Submissions are sent securely to our export desk. We typically respond within one business day.
-      </p>
+
+      {/* Submit button – inline on desktop, full on mobile */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="submit"
+          disabled={submitting || catalogLoading}
+          className="rounded-xl bg-gradient-to-r from-secondary to-secondary/80 px-8 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-secondary/30 disabled:opacity-60"
+        >
+          {submitting ? "Sending..." : variant === "quote" ? "Submit quote request" : "Send message"}
+        </button>
+        <p className="text-xs text-muted">
+          We respond within one business day.
+        </p>
+      </div>
     </form>
   );
 }
 
+// Input styling – with 3D hover effect (lift + grey shadow)
 const inputClass =
-  "mt-1.5 w-full min-h-11 rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground shadow-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 sm:min-h-0";
+  "mt-1 w-full rounded-lg border border-border/80 bg-background px-4 py-2.5 text-sm text-foreground shadow-sm transition-all duration-200 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 hover:-translate-y-0.5 hover:shadow-md";
 
+// Basic field component
 function Field({
   label,
   name,
@@ -208,6 +218,7 @@ function Field({
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-foreground/90">
         {label}
+        {required && <span className="ml-1 text-accent">*</span>}
       </label>
       <input
         id={name}
@@ -217,6 +228,53 @@ function Field({
         placeholder={placeholder}
         className={inputClass}
       />
+    </div>
+  );
+}
+
+// Select field component (inherits same hover)
+function SelectField({
+  label,
+  name,
+  options,
+  required,
+  placeholder,
+  loading,
+}: {
+  label: string;
+  name: string;
+  options: { value: string; label: string }[];
+  required?: boolean;
+  placeholder?: string;
+  loading?: boolean;
+}) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-foreground/90">
+        {label}
+        {required && <span className="ml-1 text-accent">*</span>}
+      </label>
+      <select
+        id={name}
+        name={name}
+        required={required}
+        disabled={loading}
+        defaultValue=""
+        className={cn(inputClass, "cursor-pointer")}
+      >
+        <option value="" disabled>
+          {loading ? "Loading..." : placeholder || `Select ${label.toLowerCase()}`}
+        </option>
+        {!loading &&
+          options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        {!loading && placeholder && (
+          <option value="other">Other — specify in message</option>
+        )}
+      </select>
     </div>
   );
 }

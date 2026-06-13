@@ -143,11 +143,11 @@ const categoryLabels = [
   { name: "chemicals", count: demoProducts.filter(p => p.category === "chemicals").length, icon: "🧪" },
 ];
 
-// BIG STATS CARDS - matching About page size, using original colors
+// Stats cards - Glassmorphic with blue to gold gradient
 const stats = [
-  { value: "11+", label: "Product Lines", icon: "📦", bgGradient: "from-blue-600 to-blue-500" },
-  { value: "90+", label: "Export Markets", icon: "🌍", bgGradient: "from-accent to-accent/80" },
-  { value: "100%", label: "Quality Assured", icon: "✓", bgGradient: "from-green-600 to-emerald-500" },
+  { value: "11+", label: "Product Lines", icon: "📦" },
+  { value: "90+", label: "Export Markets", icon: "🌍" },
+  { value: "100%", label: "Quality Assured", icon: "✓" },
 ];
 
 function ProductCard({ product, index }: { product: typeof demoProducts[0]; index: number }) {
@@ -164,10 +164,10 @@ function ProductCard({ product, index }: { product: typeof demoProducts[0]; inde
   return (
     <Link href={`/products/${product.slug}`}>
       <div
-        className="group relative rounded-xl bg-white border border-border/50 overflow-hidden shadow-sm transition-all duration-500 hover:shadow-lg hover:border-accent/30 cursor-pointer"
+        className="group relative rounded-xl bg-white/80 backdrop-blur-sm border border-white/40 shadow-sm transition-all duration-500 hover:shadow-lg hover:border-accent/40 cursor-pointer overflow-hidden"
         style={{ animationDelay: `${index * 0.03}s` }}
       >
-        <div className="relative p-4 pb-2 bg-gradient-to-br from-blue-50/50 to-accent/5">
+        <div className="relative p-4 pb-2 bg-gradient-to-br from-blue-50/30 to-accent/5">
           <div className="flex items-start justify-between">
             <div className="text-4xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
               {getCategoryIcon()}
@@ -234,6 +234,20 @@ export default function ProductsPage() {
           from { opacity: 0; transform: scale(0.96); }
           to { opacity: 1; transform: scale(1); }
         }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes glowPulse {
+          0% { box-shadow: 0 0 5px rgba(37,99,235,0.2), 0 0 10px rgba(245,158,11,0.1); }
+          50% { box-shadow: 0 0 15px rgba(37,99,235,0.4), 0 0 20px rgba(245,158,11,0.25); }
+          100% { box-shadow: 0 0 5px rgba(37,99,235,0.2), 0 0 10px rgba(245,158,11,0.1); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
         .animate-fade-slide-up {
           animation: fadeSlideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
         }
@@ -245,60 +259,110 @@ export default function ProductsPage() {
           border-color: #f59e0b;
           color: #f59e0b;
         }
+        /* Custom glassmorphic background for hero */
+        .glass-hero {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glass-card {
+          background: rgba(255, 255, 255, 0.65);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.1);
+        }
+        .gradient-text {
+          background: linear-gradient(135deg, #2563eb 0%, #f59e0b 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        /* Smooth hover animation for stats cards */
+        .stat-card {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+          transform: translateY(-6px) scale(1.01);
+          animation: glowPulse 0.6s ease-out;
+        }
+        .stat-card:hover .stat-icon {
+          animation: float 0.5s ease-out;
+        }
+        .stat-card:hover .stat-value {
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+          background-size: 200% 100%;
+          animation: shimmer 0.6s ease-out;
+        }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-16">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.06),transparent_50%)]" />
+      {/* Hero Section - Glassmorphic */}
+      <section className="relative overflow-hidden py-12 sm:py-16 glass-hero">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.08),rgba(245,158,11,0.04)_70%)]" />
         
         <Container>
           <div className="relative z-10 max-w-4xl mx-auto text-center">
-            {/* Eyebrow */}
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="h-px w-6 bg-gradient-to-r from-transparent to-accent/50" />
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Premium Products</p>
-                <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+            {/* Eyebrow - Glassmorphic */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-8 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/30 backdrop-blur-sm border border-white/40">
+                <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-blue-500 to-accent" />
+                <p className="text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-600 to-accent bg-clip-text text-transparent">Premium Products</p>
+                <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-accent to-blue-500" />
               </div>
-              <div className="h-px w-6 bg-gradient-to-l from-transparent to-accent/50" />
+              <div className="h-px w-8 bg-gradient-to-l from-transparent via-accent to-transparent" />
             </div>
 
-            {/* Heading */}
-            <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl">
+            {/* Heading with gradient */}
+            <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl md:text-6xl lg:text-7xl">
               Export‑ready
-              <span className="relative ml-2 inline-block">
-                <span className="bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+              <span className="relative ml-3 inline-block">
+                <span className="gradient-text">
                   product divisions
                 </span>
               </span>
             </h1>
 
             {/* Description */}
-            <p className="mt-3 max-w-2xl mx-auto text-sm text-muted sm:text-base">
+            <p className="mt-4 max-w-2xl mx-auto text-base text-muted/90 sm:text-lg md:text-xl">
               Each line includes sourcing, quality documentation, packaging options, and coordinated logistics to your destination market.
             </p>
 
-            {/* BIG STATS CARDS - Matching About page size */}
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Stats Cards - Glassmorphic with Blue to Gold gradient + Smooth Hover Animation */}
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3 max-w-2xl mx-auto">
               {stats.map((stat, idx) => (
                 <div
                   key={stat.label}
-                  className={`rounded-2xl bg-gradient-to-r ${stat.bgGradient} backdrop-blur-sm border border-white/20 p-6 text-center text-white shadow-xl transition-all hover:-translate-y-2 animate-fade-slide-up`}
+                  className="stat-card relative rounded-2xl p-4 text-center overflow-hidden group animate-fade-slide-up cursor-pointer"
                   style={{ animationDelay: `${idx * 0.1}s` }}
                 >
-                  <div className="text-4xl mb-2">{stat.icon}</div>
-                  <p className="text-3xl font-bold">{stat.value}</p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/90">{stat.label}</p>
+                  {/* Animated gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 to-accent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-accent/20 backdrop-blur-xl" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-accent rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500" />
+                  
+                  {/* Content */}
+                  <div className="relative z-10">
+                    <div className="stat-icon text-3xl mb-1 drop-shadow-md transition-transform duration-300">{stat.icon}</div>
+                    <p className="stat-value text-2xl font-bold text-white drop-shadow-md">{stat.value}</p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-wider text-white/90">{stat.label}</p>
+                  </div>
+                  
+                  {/* Glass overlay */}
+                  <div className="absolute inset-0 rounded-2xl border border-white/30 pointer-events-none" />
+                  
+                  {/* Hover shine effect */}
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 pointer-events-none overflow-hidden">
+                    <div className="absolute -inset-full top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 group-hover:animate-[shimmer_0.6s_ease-out]" />
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Trust Badges */}
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <span className="rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs text-accent animate-fade-slide-up">✓ Verified compliance</span>
-              <span className="rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs text-accent animate-fade-slide-up">✓ Global logistics network</span>
-              <span className="rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs text-accent animate-fade-slide-up">✓ End‑to‑end traceability</span>
+            {/* Trust Badges - Glassmorphic with COMPRESSED gap */}
+            <div className="mt-6 flex flex-wrap justify-center gap-x-1.5 gap-y-1">
+              <span className="rounded-full bg-white/40 backdrop-blur-sm border border-white/50 px-2 py-0.5 text-[10px] text-blue-700 font-medium shadow-sm transition-all duration-300 hover:scale-105 hover:bg-white/60 hover:shadow-md animate-fade-slide-up">✓ Verified compliance</span>
+              <span className="rounded-full bg-white/40 backdrop-blur-sm border border-white/50 px-2 py-0.5 text-[10px] text-blue-700 font-medium shadow-sm transition-all duration-300 hover:scale-105 hover:bg-white/60 hover:shadow-md animate-fade-slide-up">✓ Global logistics network</span>
+              <span className="rounded-full bg-white/40 backdrop-blur-sm border border-white/50 px-2 py-0.5 text-[10px] text-blue-700 font-medium shadow-sm transition-all duration-300 hover:scale-105 hover:bg-white/60 hover:shadow-md animate-fade-slide-up">✓ End‑to‑end traceability</span>
             </div>
           </div>
         </Container>
@@ -306,39 +370,39 @@ export default function ProductsPage() {
 
       <PageSection>
         <Container>
-          {/* Category Filter Bar */}
+          {/* Category Filter Bar - Glassmorphic with COMPRESSED spacing */}
           <div className="text-center mb-8 animate-fade-slide-up">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 mb-2">
-              <span className="text-accent text-[10px]">◆</span>
-              <span className="text-[10px] font-medium text-accent">Browse by category</span>
+            <div className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-white/50 backdrop-blur-sm border border-white/40 shadow-sm mb-2 transition-all duration-300 hover:shadow-md hover:bg-white/60">
+              <span className="text-accent text-[9px]">◆</span>
+              <span className="text-[9px] font-medium bg-gradient-to-r from-blue-600 to-accent bg-clip-text text-transparent">Browse by category</span>
             </div>
-            <div className="flex flex-wrap justify-center gap-1.5">
+            <div className="flex flex-wrap justify-center gap-1">
               {categoryLabels.map((category) => {
                 const isActive = selectedCategory === category.name;
                 return (
                   <button
                     key={category.name}
                     onClick={() => setSelectedCategory(category.name)}
-                    className={`category-pill flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium transition-all duration-300 ${
+                    className={`category-pill flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium transition-all duration-300 hover:scale-105 ${
                       isActive
-                        ? "active border-accent text-accent bg-gradient-to-r from-accent/10 to-transparent shadow-sm"
-                        : "border-border/40 text-muted hover:border-accent/40 hover:text-foreground hover:bg-accent/5"
+                        ? "active border-accent text-accent bg-gradient-to-r from-accent/15 to-blue-500/10 shadow-sm backdrop-blur-sm"
+                        : "border-white/40 text-muted hover:border-accent/50 hover:text-foreground bg-white/30 backdrop-blur-sm hover:bg-white/50"
                     }`}
                   >
-                    <span className="text-sm">{category.icon}</span>
-                    <span>{getDisplayName(category.name)}</span>
-                    <span className={`text-[10px] ${isActive ? "text-accent/70" : "text-muted/60"}`}>({category.count})</span>
+                    <span className="text-sm leading-none">{category.icon}</span>
+                    <span className="leading-none">{getDisplayName(category.name)}</span>
+                    <span className={`text-[9px] leading-none ${isActive ? "text-accent/70" : "text-muted/60"}`}>({category.count})</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Results Header */}
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-6 pb-2 border-b border-border/30 animate-slide-up">
+          {/* Results Header - Glassmorphic */}
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-6 pb-2 border-b border-white/30 animate-slide-up">
             <div>
               <h2 className="text-lg font-semibold text-primary">Product Catalog</h2>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted/80">
                 {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"} available
                 {selectedCategory !== "All" && (
                   <span className="ml-1">in <span className="text-accent font-medium">{selectedCategory}</span></span>
@@ -346,7 +410,7 @@ export default function ProductsPage() {
               </p>
             </div>
             {selectedCategory !== "All" && (
-              <button onClick={() => setSelectedCategory("All")} className="text-xs text-accent hover:text-secondary transition-colors">
+              <button onClick={() => setSelectedCategory("All")} className="text-xs text-accent hover:text-secondary transition-all duration-300 hover:scale-105">
                 Clear filter ✕
               </button>
             )}
@@ -354,7 +418,7 @@ export default function ProductsPage() {
 
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredProducts.map((product, index) => (
                 <div key={product.slug} className="animate-scale-in" style={{ animationDelay: `${index * 0.03}s` }}>
                   <ProductCard product={product} index={index} />
@@ -362,7 +426,7 @@ export default function ProductsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 glass-card rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
               <div className="text-6xl mb-3">🔍</div>
               <p className="text-muted">No products found in "{selectedCategory}"</p>
               <button onClick={() => setSelectedCategory("All")} className="mt-3 text-accent hover:text-secondary transition-colors text-sm">
@@ -371,19 +435,19 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Help Section */}
-          <div className="mt-12 rounded-xl bg-gradient-to-r from-accent/20 via-primary/10 to-accent/20 p-5 text-center border border-accent/10">
+          {/* Help Section - Glassmorphic with blue to gold gradient */}
+          <div className="mt-12 rounded-xl bg-gradient-to-r from-blue-600/10 via-accent/5 to-blue-600/10 backdrop-blur-sm p-5 text-center border border-white/40 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-2xl">🎯</span>
+                <span className="text-2xl transition-transform duration-300 hover:scale-110">🎯</span>
                 <div className="text-left">
                   <p className="font-semibold text-primary text-sm">Need assistance?</p>
-                  <p className="text-xs text-muted">Get personalized product recommendations</p>
+                  <p className="text-xs text-muted/80">Get personalized product recommendations</p>
                 </div>
               </div>
-              <Link href="/quote" className="inline-flex items-center gap-1 rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-white transition-all hover:bg-accent/80 hover:shadow-md">
+              <Link href="/quote" className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-accent px-5 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105 hover:from-blue-700 hover:to-accent/90">
                 Request a quote
-                <ChevronRightIcon className="h-3 w-3" />
+                <ChevronRightIcon className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>

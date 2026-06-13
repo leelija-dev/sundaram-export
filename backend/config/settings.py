@@ -57,6 +57,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "desk.context_processors.desk_alerts",
+                'config.context_processors.settings_context',  # Expose Django settings in templates
             ],
         },
     },
@@ -108,6 +109,9 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -161,3 +165,19 @@ if _use_smtp:
     EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+
+# Company Basic Details  --------------------------------------------------
+# Company Branding Settings
+COMPANY_NAME = os.environ.get('COMPANY_NAME', 'LEELIJA EXPORT')
+COMPANY_NAME_INIT = " ".join([word[0].upper() for word in COMPANY_NAME.split()])
+COMPANY_LOGO = os.environ.get('COMPANY_LOGO', 'company_logo.png')   # ← This is what you asked to store
+# COMPANY_LOGO = os.environ.get('COMPANY_LOGO', 'company-logo.png')   # ← This is what you asked to store
+COMPANY_LOGO_TRANSPARENT = os.environ.get('COMPANY_LOGO_TRANSPARENT', 'company_logo.png')   
+COMPANY_CONTACT = os.environ.get('COMPANY_CONTACT', '8000000000')
+COMPANY_EMAIL = os.environ.get('COMPANY_EMAIL', 'test@gmail.com')
+
+# Optional: Full path for easier use
+COMPANY_LOGO_URL = f"config/images/{COMPANY_LOGO}"
+COMPANY_LOGO_TRANSPARENT_URL = f"config/images/{COMPANY_LOGO_TRANSPARENT}"

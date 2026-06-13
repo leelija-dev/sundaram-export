@@ -5,6 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ page_title|default:"Export desk" }}{% endblock %} | Sundaram Export</title>
+  <link rel="icon" type="image/png" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
+  <link rel="apple-touch-icon" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
+
   <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
   {% block extra_css %}{% endblock %}
 </head>

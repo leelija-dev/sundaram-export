@@ -1,3 +1,5 @@
+// src/components/site-ui.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -297,6 +299,10 @@ export function Footer() {
   );
 }
 
+// ============================================================
+// FIXED PageHero - WHITE BACKGROUND (no blue gradient)
+// Homepage remains blue because it uses home-hero.tsx
+// ============================================================
 export function PageHero({
   eyebrow,
   title,
@@ -309,22 +315,22 @@ export function PageHero({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="border-b border-border bg-gradient-to-br from-primary via-primary to-primary text-white">
-      <Container className="py-10 sm:py-14 md:py-16 lg:py-20 xl:py-24">
+    <section className="border-b border-border bg-white py-12 sm:py-16 md:py-20 lg:py-24">
+      <Container>
         {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent sm:text-sm">
+          <p className="text-sm font-semibold uppercase tracking-wider text-accent">
             {eyebrow}
           </p>
         )}
-        <h1 className="mt-2 max-w-4xl text-pretty text-2xl font-bold tracking-tight sm:mt-3 sm:text-3xl md:text-4xl lg:text-5xl xl:max-w-5xl 2xl:text-[3.25rem] 2xl:leading-tight">
+        <h1 className="mt-2 max-w-4xl text-pretty text-3xl font-bold tracking-tight text-primary sm:text-4xl md:text-5xl lg:text-6xl">
           {title}
         </h1>
         {description && (
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-white/75 sm:mt-4 sm:text-lg lg:max-w-3xl xl:text-xl xl:leading-relaxed">
+          <p className="mt-3 max-w-2xl text-base text-muted sm:text-lg">
             {description}
           </p>
         )}
-        {children && <div className="mt-6 sm:mt-8">{children}</div>}
+        {children && <div className="mt-4 flex flex-wrap gap-3">{children}</div>}
       </Container>
     </section>
   );

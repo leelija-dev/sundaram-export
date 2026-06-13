@@ -13,7 +13,7 @@
           <td data-label="Number"><strong>{{ item.invoice_number }}</strong></td>
           <td data-label="Client">{{ item.client_name }}{% if item.client_company %}<br><small>{{ item.client_company }}</small>{% endif %}</td>
           <td data-label="Date">{{ item.issue_date|date:"M j, Y" }}</td>
-          <td data-label="Total">{{ item.currency }} {{ item.total }}</td>
+          <td data-label="Total">{{ item.currency.symbol }} {{ item.total }}</td>
           <td data-label="Status"><span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
           <td data-label="Actions">
             <div class="se-actions">

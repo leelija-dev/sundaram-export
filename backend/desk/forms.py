@@ -6,6 +6,7 @@ from catalog.models import ExportCountry, MarketRegion, Office, Product
 from documents.models import ExportReport, Invoice, InvoiceLine
 from customers.models import Customer
 from inquiries.models import Inquiry
+from master.models import Category, Currency
 
 
 def lines_to_list(text: str) -> list:
@@ -27,6 +28,10 @@ class ListTextarea(forms.CharField):
 
 
 class ProductForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.filter(is_active=True).order_by("sort_order", "name"),
+        empty_label="Select category",
+    )
     origins = ListTextarea(widget=forms.Textarea(attrs={"rows": 3}), required=False)
     markets = ListTextarea(widget=forms.Textarea(attrs={"rows": 3}), required=False)
     specifications = ListTextarea(widget=forms.Textarea(attrs={"rows": 4}), required=False)
@@ -121,6 +126,11 @@ class InquiryStatusForm(forms.ModelForm):
 
 
 class InvoiceForm(forms.ModelForm):
+    currency = forms.ModelChoiceField(
+        queryset=Currency.objects.filter(is_active=True).order_by("sort_order", "code"),
+        empty_label="Select currency",
+    )
+
     class Meta:
         model = Invoice
         fields = [
@@ -138,7 +148,7 @@ class InvoiceForm(forms.ModelForm):
 class InvoiceLineForm(forms.ModelForm):
     class Meta:
         model = InvoiceLine
-        fields = ["description", "quantity", "unit_price", "sort_order"]
+        fields = ["description", "quantity", "unit_price"]
 
 
 InvoiceLineFormSet = inlineformset_factory(
@@ -148,6 +158,21 @@ InvoiceLineFormSet = inlineformset_factory(
     extra=3,
     can_delete=True,
 )
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name", "slug", "description", "is_active", "sort_order"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class CurrencyForm(forms.ModelForm):
+    class Meta:
+        model = Currency
+        fields = ["code", "name", "symbol", "is_active", "sort_order"]
 
 
 class ExportReportForm(forms.ModelForm):

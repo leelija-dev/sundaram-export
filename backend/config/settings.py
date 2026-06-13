@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "desk",
     "documents",
     "customers",
+    "master",
 ]
 
 MIDDLEWARE = [

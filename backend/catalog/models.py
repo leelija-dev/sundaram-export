@@ -1,20 +1,19 @@
 from django.db import models
 
+from master.models import Category
+
 
 class Product(models.Model):
-    class Category(models.TextChoices):
-        AGRICULTURE = "agriculture", "Agriculture"
-        TEXTILES = "textiles", "Textiles"
-        ENGINEERING = "engineering", "Engineering"
-        CHEMICALS = "chemicals", "Chemicals"
-        FOOD_BEVERAGE = "food-beverage", "Food & beverage"
-        HANDICRAFTS = "handicrafts", "Handicrafts"
-
     slug = models.SlugField(max_length=120, unique=True)
     title = models.CharField(max_length=200)
     short_description = models.CharField(max_length=300)
     description = models.TextField()
-    category = models.CharField(max_length=32, choices=Category.choices)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name="products",
+        verbose_name="Category",
+    )
     hs_code = models.CharField(max_length=64, blank=True)
     origins = models.JSONField(default=list, blank=True)
     markets = models.JSONField(default=list, blank=True)

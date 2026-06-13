@@ -11,7 +11,7 @@
         {% for item in items %}
         <tr>
           <td data-label="Title"><strong>{{ item.title }}</strong><br><small>{{ item.slug }}</small></td>
-          <td data-label="Category">{{ item.get_category_display }}</td>
+          <td data-label="Category">{{ item.category.name|default:"—" }}</td>
           <td data-label="HS code">{{ item.hs_code|default:"—" }}</td>
           <td data-label="Published">{% if item.is_published %}Yes{% else %}No{% endif %}</td>
           <td data-label="Actions">

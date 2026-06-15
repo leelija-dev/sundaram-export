@@ -1,0 +1,448 @@
+﻿/* src/app/globals.css */
+
+@import "tailwindcss";
+
+:root {
+  --primary: #0a2540;
+  --secondary: #2563eb;
+  --accent: #f59e0b;
+  --background: #ffffff;
+  --foreground: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #f3f4f6;
+  --section-py: 3rem;
+  --container-max: 72rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --section-py: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --section-py: 5rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --section-py: 6rem;
+    --container-max: 90rem;
+  }
+}
+
+@theme inline {
+  --color-primary: #0a2540;
+  --color-secondary: #2563eb;
+  --color-accent: #f59e0b;
+  --color-background: #ffffff;
+  --color-foreground: #1f2937;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-surface: #f3f4f6;
+  --font-sans: var(--font-sans);
+}
+
+html {
+  overflow-x: clip;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: rgb(37 99 235 / 0.2);
+  color: var(--primary);
+}
+
+.section-py {
+  padding-top: var(--section-py);
+  padding-bottom: var(--section-py);
+}
+
+.touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
+.scroll-chips {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.scroll-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.site-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--container-max);
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .site-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .site-container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* ——— Card system ——— */
+.card-interactive {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  box-shadow: 0 1px 2px rgb(10 37 64 / 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .card-interactive {
+    border-radius: 1.25rem;
+  }
+}
+
+.card-interactive:hover {
+  border-color: rgb(37 99 235 / 0.45);
+  box-shadow: 0 10px 24px -8px rgb(10 37 64 / 0.12), 0 4px 8px -4px rgb(37 99 235 / 0.1);
+}
+
+@media (min-width: 1024px) {
+  .card-interactive:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.card-static {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  box-shadow: 0 1px 2px rgb(10 37 64 / 0.05);
+}
+
+@media (min-width: 640px) {
+  .card-static {
+    border-radius: 1.25rem;
+  }
+}
+
+.card-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .card-body {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.card-body--compact {
+  padding: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .card-body--compact {
+    padding: 1rem;
+  }
+}
+
+.card-media {
+  display: flex;
+  height: 7.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgb(37 99 235 / 0.08), rgb(245 158 11 / 0.1));
+  font-size: 2.25rem;
+}
+
+.card-media--image {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  font-size: inherit;
+  background: var(--border);
+}
+
+.card-media--image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card-product:hover .card-media--image img {
+  transform: scale(1.05);
+}
+
+@media (min-width: 640px) {
+  .card-media {
+    height: 8.5rem;
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-media {
+    height: 9rem;
+    font-size: 2.75rem;
+  }
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.card-footer--bordered {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* =========================================================
+   ✨ PREMIUM ANIMATION SYSTEM
+   ========================================================= */
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes growLine {
+  from {
+    height: 0%;
+  }
+  to {
+    height: 100%;
+  }
+}
+
+/* Utility animation classes */
+.animate-fadeSlideUp {
+  animation: fadeSlideUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.6s ease forwards;
+}
+
+.animate-growLine {
+  animation: growLine 1.8s ease forwards;
+}
+
+/* Smooth GPU-friendly hover utility */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* Reduce motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeSlideUp,
+  .animate-fadeIn,
+  .animate-scaleIn,
+  .animate-growLine {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   ✨ MARQUEE ANIMATION - CLEAN VERSION
+   ========================================================= */
+
+@keyframes scrollFixed {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-track {
+  display: inline-block;
+  width: max-content;
+  white-space: nowrap;
+  animation: scrollFixed 20s linear infinite;
+  will-change: transform;
+}
+
+.marquee-item {
+  display: inline-block;
+  margin: 0 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  color: rgb(255 255 255 / 0.9);
+}
+
+@media (min-width: 640px) {
+  .marquee-item {
+    margin: 0 1.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marquee-item {
+    margin: 0 2rem;
+    font-size: 0.9375rem;
+  }
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/* Home page — export process timeline */
+.home-process-grid {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .home-process-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-process-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.home-process-step::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: linear-gradient(to right, var(--secondary), var(--accent));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.home-process-step:hover::before {
+  opacity: 1;
+}
+
+@media (min-width: 1024px) {
+  .home-process-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 2.25rem;
+    right: -0.875rem;
+    width: 1.75rem;
+    height: 2px;
+    background: linear-gradient(to right, var(--border), transparent);
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}

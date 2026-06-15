@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:"Export desk" }}{% endblock %} | Sundaram Export</title>
+  <link rel="icon" type="image/png" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
+  <link rel="apple-touch-icon" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
+
+  <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="se-app">
+    <div class="se-overlay" id="se-overlay" aria-hidden="true"></div>
+
+    <aside class="se-sidebar" id="se-sidebar" aria-label="Main navigation">
+      <div class="se-sidebar-brand">
+        <a href="{% url 'desk:dashboard' %}">
+          <span class="se-sidebar-logo">SE</span>
+          <span>
+            <strong>Sundaram Export</strong>
+            <small>Admin portal</small>
+          </span>
+        </a>
+      </div>
+      <nav class="se-sidebar-nav">
+        <span class="se-nav-label">Overview</span>
+        <a href="{% url 'desk:dashboard' %}" class="se-nav-link {% if nav_section == 'dashboard' %}active{% endif %}">
+          <span class="se-nav-icon">◉</span> Analytics
+        </a>
+        <span class="se-nav-label">Catalog</span>
+        <a href="{% url 'desk:product_list' %}" class="se-nav-link {% if nav_section == 'products' %}active{% endif %}">
+          <span class="se-nav-icon">▣</span> Products
+        </a>
+        <a href="{% url 'desk:category_list' %}" class="se-nav-link {% if nav_section == 'categories' %}active{% endif %}">
+          <span class="se-nav-icon">▦</span> Categories
+        </a>
+        <a href="{% url 'desk:country_list' %}" class="se-nav-link {% if nav_section == 'countries' %}active{% endif %}">
+          <span class="se-nav-icon">◎</span> Export countries
+        </a>
+        <a href="{% url 'desk:market_list' %}" class="se-nav-link {% if nav_section == 'regions' %}active{% endif %}">
+          <span class="se-nav-icon">◈</span> Market regions
+        </a>
+        <a href="{% url 'desk:office_list' %}" class="se-nav-link {% if nav_section == 'offices' %}active{% endif %}">
+          <span class="se-nav-icon">⌂</span> Offices
+        </a>
+        <a href="{% url 'desk:currency_list' %}" class="se-nav-link {% if nav_section == 'currencies' %}active{% endif %}">
+          <span class="se-nav-icon">$</span> Currencies
+        </a>
+        <span class="se-nav-label">Sales</span>
+        <a href="{% url 'desk:customer_list' %}" class="se-nav-link {% if nav_section == 'customers' %}active{% endif %}">
+          <span class="se-nav-icon">👤</span> Customers
+        </a>
+        <a href="{% url 'desk:inquiry_list' %}?status=new" class="se-nav-link {% if nav_section == 'inquiries' %}active{% endif %}">
+          <span class="se-nav-icon">✉</span> Inquiries
+          {% if desk_new_inquiries %}<span class="se-nav-badge">{{ desk_new_inquiries }}</span>{% endif %}
+        </a>
+        <a href="{% url 'desk:invoice_list' %}" class="se-nav-link {% if nav_section == 'invoices' %}active{% endif %}">
+          <span class="se-nav-icon">₹</span> Invoices
+        </a>
+        <a href="{% url 'desk:report_list' %}" class="se-nav-link {% if nav_section == 'reports' %}active{% endif %}">
+          <span class="se-nav-icon">▤</span> Reports
+        </a>
+      </nav>
+      <div class="se-sidebar-footer">
+        {% if user.is_authenticated %}
+        <div class="se-sidebar-user">{{ user.get_username }}</div>
+        <a href="/admin/">Django admin</a>
+        <a href="{% url 'desk:logout' %}">Log out</a>
+        {% endif %}
+      </div>
+    </aside>
+
+    <div class="se-main">
+      <header class="se-topbar">
+        <button type="button" class="se-menu-btn" id="se-menu-btn" aria-label="Open menu" aria-expanded="false">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </button>
+        <div class="se-topbar-title">
+          <h1>{% block page_heading %}{{ page_title|default:"Dashboard" }}{% endblock %}</h1>
+        </div>
+        <div class="se-topbar-actions">
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <div class="se-content">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="se-alert se-alert-{{ message.tags|default:'success' }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'desk/desk.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,50 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}
+<a href="{% url 'desk:country_add' %}" class="se-btn se-btn-primary">+ Add country</a>
+<a href="{% url 'desk:market_list' %}" class="se-btn se-btn-secondary">Regions</a>
+{% endblock %}
+{% block content %}
+<p class="se-muted" style="margin-bottom:1rem">Manage each destination you export to — e.g. Bangladesh, Dubai, USA. Assign an optional region for grouping on the website.</p>
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr>
+          <th>Country / destination</th>
+          <th>Region</th>
+          <th>Key ports</th>
+          <th>Published</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Destination">
+            <strong>{{ item.name }}</strong>
+            {% if item.subtitle %}<br><small>{{ item.subtitle }}</small>{% endif %}
+            <br><small>{{ item.slug }}</small>
+          </td>
+          <td data-label="Region">{{ item.region.name|default:"—" }}</td>
+          <td data-label="Ports">{{ item.key_ports|join:", "|truncatewords:8|default:"—" }}</td>
+          <td data-label="Published">{% if item.is_published %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:country_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+              <a href="{% url 'desk:country_delete' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="se-empty">
+            No export countries yet.
+            <a href="{% url 'desk:country_add' %}">Add Bangladesh, Dubai, or other destinations</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

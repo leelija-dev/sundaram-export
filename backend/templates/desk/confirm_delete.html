@@ -1,0 +1,11 @@
+{% extends "desk/base.html" %}
+{% block content %}
+<div class="se-card se-card-pad" style="max-width:28rem">
+  <p>Are you sure you want to delete <strong>{{ object }}</strong>? This cannot be undone.</p>
+  <form method="post" class="se-form-actions" style="border:none; padding-top:1rem">
+    {% csrf_token %}
+    <button type="submit" class="se-btn se-btn-danger">Delete</button>
+    <a href="{{ cancel_url }}" class="se-btn se-btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

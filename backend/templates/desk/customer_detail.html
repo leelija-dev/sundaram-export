@@ -1,0 +1,66 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}
+<a href="{% url 'desk:customer_edit' customer.pk %}" class="se-btn se-btn-primary">Edit</a>
+{% endblock %}
+{% block content %}
+<div class="se-grid-2">
+  <div class="se-card se-card-pad">
+    <h2 class="se-section-title" style="margin-top:0">Customer profile</h2>
+    <div class="se-detail-list">
+      <p><strong>Company</strong> {{ customer.company_name }}</p>
+      <p><strong>Contact</strong> {{ customer.contact_name|default:"—" }}</p>
+      <p><strong>Email</strong> {% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}—{% endif %}</p>
+      <p><strong>Phone</strong> {{ customer.phone|default:"—" }}</p>
+      <p><strong>Type</strong> {{ customer.get_customer_type_display }}</p>
+      <p><strong>Status</strong> <span class="se-badge se-badge-{{ customer.status }}">{{ customer.get_status_display }}</span></p>
+      <p><strong>Export destination</strong> {{ customer.destination_display }}</p>
+      {% if customer.address %}<p><strong>Address</strong> {{ customer.address }}</p>{% endif %}
+      {% if customer.notes %}<p><strong>Notes</strong></p><div class="se-message-box">{{ customer.notes }}</div>{% endif %}
+      <p class="se-muted">Added {{ customer.created_at|date:"M j, Y" }}</p>
+    </div>
+  </div>
+  <div class="se-card">
+    <div class="se-card-header se-card-header-light">Linked inquiries</div>
+    {% if inquiries %}
+    <div class="se-table-wrap">
+      <table class="se-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for inv in inquiries %}
+          <tr>
+            <td>{{ inv.created_at|date:"M j, Y" }}</td>
+            <td>{{ inv.get_inquiry_type_display }}</td>
+            <td><span class="se-badge se-badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+            <td><a href="{% url 'desk:inquiry_detail' inv.pk %}">Open</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="se-empty">No inquiries linked yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% if invoices %}
+<div class="se-card" style="margin-top:1.25rem">
+  <div class="se-card-header se-card-header-light">Invoices</div>
+  <div class="se-table-wrap">
+    <table class="se-table">
+      <thead><tr><th>Number</th><th>Date</th><th>Total</th><th></th></tr></thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td>{{ inv.invoice_number }}</td>
+          <td>{{ inv.issue_date|date:"M j, Y" }}</td>
+          <td>{{ inv.currency.symbol }} {{ inv.total }}</td>
+          <td><a href="{% url 'desk:invoice_detail' inv.pk %}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+<a href="{% url 'desk:customer_list' %}" class="se-btn se-btn-secondary">← All customers</a>
+{% endblock %}

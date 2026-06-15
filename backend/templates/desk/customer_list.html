@@ -1,0 +1,49 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}<a href="{% url 'desk:customer_add' %}" class="se-btn se-btn-primary">+ Add customer</a>{% endblock %}
+{% block content %}
+<form method="get" class="se-filter-bar">
+  <select name="status" aria-label="Filter by status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="prospect" {% if filter_status == "prospect" %}selected{% endif %}>Prospect</option>
+    <option value="active" {% if filter_status == "active" %}selected{% endif %}>Active</option>
+    <option value="inactive" {% if filter_status == "inactive" %}selected{% endif %}>Inactive</option>
+  </select>
+</form>
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Destination</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Leads</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Company"><strong>{{ item.company_name }}</strong></td>
+          <td data-label="Contact">{{ item.contact_name|default:"—" }}<br><small>{{ item.email }}</small></td>
+          <td data-label="Destination">{{ item.destination_display }}</td>
+          <td data-label="Type">{{ item.get_customer_type_display }}</td>
+          <td data-label="Status"><span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+          <td data-label="Leads">{{ item.inquiry_count }}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:customer_detail' item.pk %}" class="se-btn se-btn-sm se-btn-primary">View</a>
+              <a href="{% url 'desk:customer_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="se-empty">No customers yet. <a href="{% url 'desk:customer_add' %}">Add one</a> or create from an inquiry.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in | Sundaram Export</title>
+  <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
+  <style>
+    .se-login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: linear-gradient(145deg, #0a2540 0%, #1e3a5f 50%, #2563eb 100%);
+    }
+    .se-login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 25px 50px rgba(10, 37, 64, 0.25);
+    }
+    .se-login-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .se-login-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #f59e0b);
+      color: #fff;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+    .se-login-brand h1 { margin: 0; font-size: 1.25rem; color: #0a2540; }
+    .se-login-brand p { margin: 0.15rem 0 0; font-size: 0.85rem; color: #64748b; }
+    .se-login-err {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .se-login-foot {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="se-login-page">
+    <div class="se-login-card">
+      <div class="se-login-brand">
+        <span class="se-login-logo">SE</span>
+        <div>
+          <h1>Sundaram Export</h1>
+          <p>Admin management portal</p>
+        </div>
+      </div>
+      {% if form.errors %}
+      <p class="se-login-err">Invalid username or password. Please try again.</p>
+      {% endif %}
+      <form method="post" action="{% url 'desk:login' %}" class="se-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next|default:'/desk/' }}">
+        <div class="se-field">
+          <label for="id_username">Username</label>
+          <input type="text" name="username" id="id_username" autofocus required autocomplete="username">
+        </div>
+        <div class="se-field">
+          <label for="id_password">Password</label>
+          <input type="password" name="password" id="id_password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="se-btn se-btn-primary se-btn-block">Sign in</button>
+      </form>
+      <p class="se-login-foot"><a href="/admin/">Django admin</a> — users &amp; advanced settings</p>
+    </div>
+  </div>
+</body>
+</html>

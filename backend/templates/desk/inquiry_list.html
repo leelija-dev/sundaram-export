@@ -1,0 +1,42 @@
+{% extends "desk/base.html" %}
+{% block content %}
+<form method="get" class="se-filter-bar">
+  <select name="status" aria-label="Filter by status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="new" {% if filter_status == "new" %}selected{% endif %}>New</option>
+    <option value="contacted" {% if filter_status == "contacted" %}selected{% endif %}>Contacted</option>
+    <option value="quoted" {% if filter_status == "quoted" %}selected{% endif %}>Quoted</option>
+    <option value="won" {% if filter_status == "won" %}selected{% endif %}>Won</option>
+    <option value="lost" {% if filter_status == "lost" %}selected{% endif %}>Lost</option>
+  </select>
+  <select name="type" aria-label="Filter by type" onchange="this.form.submit()">
+    <option value="">All types</option>
+    <option value="contact" {% if filter_type == "contact" %}selected{% endif %}>Contact</option>
+    <option value="quote" {% if filter_type == "quote" %}selected{% endif %}>Quote</option>
+  </select>
+</form>
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr><th>Name</th><th>Customer</th><th>Type</th><th>Status</th><th>Route</th><th>Date</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Name"><strong>{{ item.name }}</strong><br><small>{{ item.email }}</small></td>
+          <td data-label="Customer">{% if item.customer %}<a href="{% url 'desk:customer_detail' item.customer.pk %}">{{ item.customer.company_name }}</a>{% else %}—{% endif %}</td>
+          <td data-label="Type"><span class="se-badge se-badge-{{ item.inquiry_type }}">{{ item.get_inquiry_type_display }}</span></td>
+          <td data-label="Status"><span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+          <td data-label="Route">{% if item.origin or item.destination %}{{ item.origin|default:"—" }} → {{ item.destination|default:"—" }}{% else %}—{% endif %}</td>
+          <td data-label="Date">{{ item.created_at|date:"M j, Y" }}</td>
+          <td data-label=""><a href="{% url 'desk:inquiry_detail' item.pk %}" class="se-btn se-btn-sm se-btn-primary">Open</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="se-empty">No inquiries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

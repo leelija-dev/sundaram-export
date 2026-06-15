@@ -79,13 +79,14 @@ class ExportCountryForm(forms.ModelForm):
 
 
 class MarketRegionForm(forms.ModelForm):
+    countries = ListTextarea(widget=forms.Textarea(attrs={"rows": 3}), required=False)
     key_ports = ListTextarea(widget=forms.Textarea(attrs={"rows": 3}), required=False)
     specialties = ListTextarea(widget=forms.Textarea(attrs={"rows": 3}), required=False)
 
     class Meta:
         model = MarketRegion
         fields = [
-            "name", "slug", "description", "key_ports",
+            "name", "slug", "description", "countries", "key_ports",
             "specialties", "is_published", "sort_order",
         ]
         widgets = {"description": forms.Textarea(attrs={"rows": 4})}
@@ -167,6 +168,12 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get("slug") or ""
+        if not slug and self.cleaned_data.get("name"):
+            slug = slugify(self.cleaned_data["name"])
+        return slug
 
 
 class CurrencyForm(forms.ModelForm):

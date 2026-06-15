@@ -1,0 +1,30 @@
+{% extends "desk/base.html" %}
+{% block topbar_actions %}<a href="{% url 'desk:category_add' %}" class="se-btn se-btn-primary">+ Add category</a>{% endblock %}
+{% block content %}
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr><th>Name</th><th>Slug</th><th>Active</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td data-label="Name"><strong>{{ item.name }}</strong></td>
+          <td data-label="Slug">{{ item.slug }}</td>
+          <td data-label="Active">{% if item.is_active %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:category_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+              <a href="{% url 'desk:category_delete' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="se-empty">No categories yet. <a href="{% url 'desk:category_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

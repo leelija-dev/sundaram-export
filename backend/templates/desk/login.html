@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in | Sundaram Export</title>
+  <title>Sign in | {{ setting.COMPANY_NAME }}</title>
   <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
   <style>
     .se-login-page {
@@ -64,21 +64,25 @@
   <div class="se-login-page">
     <div class="se-login-card">
       <div class="se-login-brand">
-        <span class="se-login-logo">SE</span>
-        <div>
-          <h1>Sundaram Export</h1>
+          <span class="se-login-logo">{{ setting.COMPANY_NAME_INIT }}</span>
+          <div>
+          <h1>{{ setting.COMPANY_NAME }}</h1>
           <p>Admin management portal</p>
         </div>
       </div>
-      {% if form.errors %}
-      <p class="se-login-err">Invalid username or password. Please try again.</p>
+      {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+      <p class="se-login-err">{{ error }}</p>
+      {% endfor %}
+      {% elif form.errors %}
+      <p class="se-login-err">Invalid username/email or password. Please try again.</p>
       {% endif %}
       <form method="post" action="{% url 'desk:login' %}" class="se-form">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next|default:'/desk/' }}">
         <div class="se-field">
-          <label for="id_username">Username</label>
-          <input type="text" name="username" id="id_username" autofocus required autocomplete="username">
+          <label for="id_username">Username or email</label>
+          <input type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" autofocus required autocomplete="username" placeholder="Username or email">
         </div>
         <div class="se-field">
           <label for="id_password">Password</label>

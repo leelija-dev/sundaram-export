@@ -1,4 +1,5 @@
 {% extends "desk/base.html" %}
+{% load desk_extras %}
 {% block topbar_actions %}
 <a href="{% url 'desk:invoice_print' invoice.pk %}" class="se-btn se-btn-secondary" target="_blank" rel="noopener">Print</a>
 <a href="{% url 'desk:invoice_edit' invoice.pk %}" class="se-btn se-btn-primary">Edit</a>
@@ -25,17 +26,17 @@
         <tr>
           <td>{{ line.description }}</td>
           <td>{{ line.quantity }}</td>
-          <td>{{ invoice.currency.symbol }} {{ line.unit_price }}</td>
-          <td>{{ invoice.currency.symbol }} {{ line.amount }}</td>
+          <td>{{ invoice|money_symbol }} {{ line.unit_price }}</td>
+          <td>{{ invoice|money_symbol }} {{ line.amount }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   <div style="margin-top:1.25rem; text-align:left; max-width:12rem; margin-left:auto">
-    <p style="display:flex; justify-content:space-between">Subtotal: <strong>{{ invoice.currency.symbol }}{{ invoice.subtotal }}</strong></p>
-    <p style="display:flex; justify-content:space-between">Tax ({{ invoice.tax_rate }}%): <span>{{ invoice.currency.symbol }}{{ invoice.tax_amount }}</span></p>
-    <p style="display:flex; justify-content:space-between; font-size:1.15rem; margin-top:0.5rem">Total: <strong>{{ invoice.currency.symbol }}{{ invoice.total }}</strong></p>
+    <p style="display:flex; justify-content:space-between">Subtotal: <strong>{{ invoice|money_symbol }}{{ invoice.subtotal }}</strong></p>
+    <p style="display:flex; justify-content:space-between">Tax ({{ invoice.tax_rate }}%): <span>{{ invoice|money_symbol }}{{ invoice.tax_amount }}</span></p>
+    <p style="display:flex; justify-content:space-between; font-size:1.15rem; margin-top:0.5rem">Total: <strong>{{ invoice|money_symbol }}{{ invoice.total }}</strong></p>
   </div>
   {% if invoice.notes %}<p style="margin-top:1rem"><strong>Notes:</strong> {{ invoice.notes }}</p>{% endif %}
 </div>

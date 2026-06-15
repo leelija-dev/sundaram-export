@@ -329,12 +329,32 @@ body {
   transform: translateY(-4px);
 }
 
+/* Export map — route destination pin blink */
+@keyframes route-point-blink {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+.route-point-blink {
+  animation: route-point-blink 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 /* Reduce motion accessibility */
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeSlideUp,
   .animate-fadeIn,
   .animate-scaleIn,
-  .animate-growLine {
+  .animate-growLine,
+  .route-point-blink {
     animation: none !important;
   }
 }

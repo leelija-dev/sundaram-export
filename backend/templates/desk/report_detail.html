@@ -1,4 +1,5 @@
 {% extends "desk/base.html" %}
+{% load desk_extras %}
 {% block content %}
 <div class="se-card se-card-pad">
   <div class="se-detail-list">
@@ -10,7 +11,7 @@
   <h2 class="se-section-title">Report data</h2>
   <div class="se-card se-card-pad se-report-data" style="background:#f8fafc; margin:0">
     {% for key, value in report.data.items %}
-    <p><strong>{{ key }}</strong> {{ value }}</p>
+    <p><strong>{{ key|title }}</strong> {{ value|format_report_value }}</p>
     {% empty %}
     <p class="se-muted">No data.</p>
     {% endfor %}

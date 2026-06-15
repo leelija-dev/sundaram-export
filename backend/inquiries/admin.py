@@ -42,9 +42,9 @@ class InquiryAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_per_page = 25
     actions = [mark_contacted, mark_quoted, mark_won, mark_lost]
-    list_select_related = ("product",)
+    list_select_related = ("product", "customer")
     fieldsets = (
-        (None, {"fields": ("id", "inquiry_type", "status")}),
+        (None, {"fields": ("id", "inquiry_type", "status", "customer")}),
         ("Contact", {"fields": ("name", "company", "email", "phone")}),
         ("Shipment", {"fields": ("origin", "destination", "product", "incoterms", "volume")}),
         ("Message", {"fields": ("message",)}),

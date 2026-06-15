@@ -12,6 +12,22 @@ class ProductListSerializer(serializers.ModelSerializer):
             "slug",
             "title",
             "short_description",
+            "category",
+            "hs_code",
+            "origins",
+            "markets",
+        ]
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    category = serializers.SlugField(source="category.slug", read_only=True)
+
+    class Meta:
+        model = Product
+        fields = [
+            "slug",
+            "title",
+            "short_description",
             "description",
             "category",
             "hs_code",
@@ -20,10 +36,6 @@ class ProductListSerializer(serializers.ModelSerializer):
             "specifications",
             "packaging",
         ]
-
-
-class ProductDetailSerializer(ProductListSerializer):
-    pass
 
 
 class ExportCountrySerializer(serializers.ModelSerializer):
@@ -70,4 +82,4 @@ class MarketRegionSerializer(serializers.ModelSerializer):
 class OfficeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Office
-        fields = ["region", "address", "phone", "email"]
+        fields = ["id", "region", "address", "phone", "email"]

@@ -1,6 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
+from .auth import DeskLoginView
 from . import views
 
 app_name = "desk"
@@ -17,7 +18,7 @@ urlpatterns = [
     path("currencies/<int:pk>/edit/", views.CurrencyUpdateView.as_view(), name="currency_edit"),
     path("currencies/<int:pk>/delete/", views.CurrencyDeleteView.as_view(), name="currency_delete"),
     path("", views.DashboardView.as_view(), name="dashboard"),
-    path("login/", auth_views.LoginView.as_view(template_name="desk/login.html"), name="login"),
+    path("login/", DeskLoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="desk:login"), name="logout"),
     # Products
     path("products/", views.ProductListView.as_view(), name="product_list"),

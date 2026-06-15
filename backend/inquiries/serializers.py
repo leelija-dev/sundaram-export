@@ -38,6 +38,10 @@ class InquiryCreateSerializer(serializers.Serializer):
 
         if product_slug:
             product = Product.objects.filter(slug=product_slug, is_published=True).first()
+            if product is None:
+                raise serializers.ValidationError(
+                    {"product_slug": "Unknown or unpublished product."}
+                )
 
         inquiry = Inquiry.objects.create(
             inquiry_type=validated_data["type"],

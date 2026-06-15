@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -178,7 +179,9 @@ class MarketListView(DeskMixin, ListView):
     def get_queryset(self):
         from django.db.models import Count
 
-        return MarketRegion.objects.annotate(country_count=Count("export_countries"))
+        return MarketRegion.objects.annotate(country_count=Count("export_countries")).order_by(
+            "sort_order", "name"
+        )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -299,7 +302,7 @@ class CustomerListView(DeskMixin, ListView):
         status = self.request.GET.get("status")
         if status:
             qs = qs.filter(status=status)
-        return qs.annotate(inquiry_count=Count("inquiries"))
+        return qs.annotate(inquiry_count=Count("inquiries")).order_by("company_name")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -378,14 +381,21 @@ class CustomerCreateFromInquiryView(DeskMixin, View):
         if inquiry.email:
             customer = Customer.objects.filter(email__iexact=inquiry.email).first()
         if customer is None:
+            export_country = None
+            if inquiry.destination:
+                dest = inquiry.destination.strip()
+                export_country = ExportCountry.objects.filter(
+                    Q(name__iexact=dest) | Q(slug__iexact=dest)
+                ).first()
             customer = Customer.objects.create(
                 company_name=company,
                 contact_name=inquiry.name if inquiry.company else "",
                 email=inquiry.email,
                 phone=inquiry.phone,
-                country_other=inquiry.destination,
+                export_country=export_country,
+                country_other=inquiry.destination if not export_country else "",
                 status=Customer.Status.PROSPECT,
-                notes=f"Created from website inquiry.",
+                notes="Created from website inquiry.",
             )
         inquiry.customer = customer
         inquiry.save(update_fields=["customer"])

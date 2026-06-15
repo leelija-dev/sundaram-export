@@ -9,7 +9,6 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ("category", "is_published")
     search_fields = ("title", "slug", "category__name")
     prepopulated_fields = {"slug": ("title",)}
-    raw_id_fields = ("category",)
     autocomplete_fields = ("category",)
 
 

@@ -6,11 +6,14 @@ from rest_framework.views import APIView
 
 from .emails import send_inquiry_notification
 from .serializers import InquiryCreateSerializer, InquiryResponseSerializer
+from .throttles import InquiryCreateThrottle
 
 logger = logging.getLogger(__name__)
 
 
 class InquiryCreateView(APIView):
+    throttle_classes = [InquiryCreateThrottle]
+
     def post(self, request):
         serializer = InquiryCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

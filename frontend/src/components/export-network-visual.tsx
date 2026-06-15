@@ -2,7 +2,8 @@
 
 /** Hero background — world map + routes in one SVG for aligned hub-focused positioning. */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import {
   MAP_CONTAINER_INSET,
   MAP_LAYOUT,
@@ -36,6 +37,7 @@ const ROUTES = [
 const ROUTE_GLOW = "#ffffff";
 const ROUTE_LINE = "#ffffff";
 const ROUTE_LINE_HOVER = "#ffffff";
+const ROUTE_POINT = "#f59e0b";
 
 const MAP_SRC: Record<MapBreakpoint, string> = {
   mobile: "/maps/world-map-compact.svg",
@@ -50,59 +52,64 @@ function arcPath(x1: number, y1: number, x2: number, y2: number, lift: number) {
   return `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`;
 }
 
-function RouteLabel({
-  x,
-  y,
-  label,
-  fontSize,
-  viewBox,
-}: {
-  x: number;
-  y: number;
-  label: string;
-  fontSize: number;
-  viewBox: { x: number; y: number; w: number; h: number };
-}) {
-  const charW = fontSize * 0.58;
-  const width = Math.max(label.length * charW + 18, 52);
-  const height = fontSize + 12;
-  const pad = 6;
+function usePinScreenPosition(
+  containerRef: RefObject<HTMLDivElement | null>,
+  pinX: number | null,
+  pinY: number | null,
+  viewBox: { x: number; y: number; w: number; h: number }
+) {
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
 
-  let left = x - width / 2;
-  let top = y - height - 10;
+  useLayoutEffect(() => {
+    if (pinX == null || pinY == null) {
+      setPosition((prev) => (prev === null ? prev : null));
+      return;
+    }
 
-  if (left < viewBox.x + pad) left = viewBox.x + pad;
-  if (left + width > viewBox.x + viewBox.w - pad) left = viewBox.x + viewBox.w - width - pad;
-  if (top < viewBox.y + pad) top = y + 12;
+    const update = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const rx = (pinX - viewBox.x) / viewBox.w;
+      const ry = (pinY - viewBox.y) / viewBox.h;
+      const next = {
+        x: rect.left + rx * rect.width,
+        y: rect.top + ry * rect.height,
+      };
+      setPosition((prev) =>
+        prev && prev.x === next.x && prev.y === next.y ? prev : next
+      );
+    };
 
-  const centerX = left + width / 2;
-  const centerY = top + height / 2;
+    update();
+    const el = containerRef.current;
+    const observer = el ? new ResizeObserver(update) : null;
+    if (el && observer) observer.observe(el);
+    window.addEventListener("resize", update, { passive: true });
+    window.addEventListener("scroll", update, { passive: true });
 
-  return (
-    <g pointerEvents="none" role="tooltip">
-      <rect
-        x={left}
-        y={top}
-        width={width}
-        height={height}
-        rx={height / 2}
-        fill="rgba(10,37,64,0.96)"
-        stroke="#ffffff"
-        strokeWidth="1"
-      />
-      <text
-        x={centerX}
-        y={centerY}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="#ffffff"
-        fontSize={fontSize}
-        fontWeight="600"
-        fontFamily="system-ui, sans-serif"
-      >
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update);
+    };
+  }, [containerRef, pinX, pinY, viewBox.x, viewBox.y, viewBox.w, viewBox.h]);
+
+  return position;
+}
+
+function RoutePointTooltip({ x, y, label }: { x: number; y: number; label: string }) {
+  return createPortal(
+    <div
+      className="pointer-events-none fixed z-[200]"
+      style={{ left: x, top: y - 10, transform: "translate(-50%, -100%)" }}
+      role="tooltip"
+    >
+      <span className="inline-block whitespace-nowrap rounded-full border border-[#f59e0b] bg-[#0a2540]/97 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-white shadow-xl shadow-black/40 sm:text-sm">
         {label}
-      </text>
-    </g>
+      </span>
+    </div>,
+    document.body
   );
 }
 
@@ -167,13 +174,23 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
   const mapOpacity = layout.mapOpacity;
   const mapSrc = MAP_SRC[breakpoint];
   const activeRoute = ROUTES.find((r) => r.label === hoveredRoute) ?? null;
-  const labelFontSize = layout.labelFont + 1;
+  const pinScreenPos = usePinScreenPosition(
+    containerRef,
+    activeRoute?.x ?? null,
+    activeRoute?.y ?? null,
+    viewBox
+  );
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div
       ref={containerRef}
       className={cn(
-        "absolute",
+        "pointer-events-none absolute",
         MAP_CONTAINER_INSET[breakpoint],
         breakpoint === "desktop" && "xl:inset-0",
         className
@@ -215,7 +232,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
 
       <svg
         viewBox={viewBoxStr}
-        className="absolute inset-0 z-[2] h-full w-full"
+        className="pointer-events-none absolute inset-0 z-[2] h-full w-full"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid slice"
@@ -267,7 +284,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
           />
         </g>
 
-        {ROUTES.map((point) => {
+        {ROUTES.map((point, index) => {
           const isHovered = hoveredRoute === point.label;
           const isNearHub = point.emphasis >= 0.8;
           const strokeWidth = 0.45 + point.emphasis * 0.18;
@@ -277,37 +294,10 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
           const pinR = isHovered ? layout.pinRadius * 1.3 : layout.pinRadius;
           const pinOpacity = isHovered ? 1 : 0.25 + point.emphasis * 0.75;
           const dotPattern = isHovered ? "1.5 5" : "1 6";
+          const blinkDelay = `${index * 0.28}s`;
 
           return (
-            <g
-              key={point.label}
-              className="cursor-pointer touch-manipulation"
-              onMouseEnter={() => setHoveredRoute(point.label)}
-              onMouseLeave={() => setHoveredRoute(null)}
-              onFocus={() => setHoveredRoute(point.label)}
-              onBlur={() => setHoveredRoute(null)}
-              onClick={() =>
-                setHoveredRoute((current) => (current === point.label ? null : point.label))
-              }
-            >
-              {/* Pin hit area — hover point shows country name */}
-              <circle
-                cx={point.x}
-                cy={point.y}
-                r={Math.max(layout.pinRadius * 3.2, 12)}
-                fill="transparent"
-                pointerEvents="all"
-                tabIndex={0}
-                role="button"
-                aria-label={point.label}
-              />
-              <path
-                d={pathD}
-                stroke="transparent"
-                strokeWidth={layout.hitWidth}
-                pointerEvents="stroke"
-                aria-hidden
-              />
+            <g key={point.label} pointerEvents="none">
               <path
                 d={pathD}
                 stroke={ROUTE_GLOW}
@@ -315,7 +305,6 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
                 strokeWidth={strokeWidth + 0.9}
                 strokeDasharray={dotPattern}
                 strokeLinecap="round"
-                pointerEvents="none"
               />
               <path
                 d={pathD}
@@ -324,44 +313,61 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
                 strokeWidth={strokeWidth + (isHovered ? 0.15 : 0)}
                 strokeDasharray={dotPattern}
                 strokeLinecap="round"
-                pointerEvents="none"
               />
 
-              <g opacity={pinOpacity} pointerEvents="none">
+              <g
+                opacity={pinOpacity}
+                transform={`translate(${point.x} ${point.y})`}
+              >
                 <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={pinR + 1.2}
-                  fill="#ffffff"
-                  opacity={isHovered ? 0.35 : 0.22}
+                  className={isHovered ? undefined : "route-point-blink"}
+                  cx={0}
+                  cy={0}
+                  r={pinR + 1}
+                  fill={ROUTE_POINT}
+                  style={isHovered ? undefined : { animationDelay: blinkDelay }}
                 />
-                <circle cx={point.x} cy={point.y} r={pinR} fill="#ffffff" opacity="0.95" />
-                <circle cx={point.x} cy={point.y} r={pinR * 0.35} fill="#0a2540" opacity="0.75" />
+                <circle cx={0} cy={0} r={pinR} fill={ROUTE_POINT} />
+                <circle cx={0} cy={0} r={pinR * 0.32} fill="#0a2540" opacity="0.85" />
               </g>
             </g>
           );
         })}
       </svg>
 
-      {/* Labels above mask so country names stay fully visible on hover */}
+      {/* Hit layer — pin only; route lines are not hover targets */}
       <svg
         viewBox={viewBoxStr}
-        className="pointer-events-none absolute inset-0 z-[3] h-full w-full"
+        className="pointer-events-auto absolute inset-0 z-[3] h-full w-full"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid slice"
-        aria-hidden={!activeRoute}
       >
-        {activeRoute && (
-          <RouteLabel
-            x={activeRoute.x}
-            y={activeRoute.y}
-            label={activeRoute.label}
-            fontSize={labelFontSize}
-            viewBox={viewBox}
+        {ROUTES.map((point) => (
+          <circle
+            key={point.label}
+            cx={point.x}
+            cy={point.y}
+            r={layout.pinRadius + 1.25}
+            fill="transparent"
+            className="cursor-pointer touch-manipulation"
+            onMouseEnter={() => setHoveredRoute(point.label)}
+            onMouseLeave={() => setHoveredRoute(null)}
+            onFocus={() => setHoveredRoute(point.label)}
+            onBlur={() => setHoveredRoute(null)}
+            onClick={() =>
+              setHoveredRoute((current) => (current === point.label ? null : point.label))
+            }
+            tabIndex={0}
+            role="button"
+            aria-label={point.label}
           />
-        )}
+        ))}
       </svg>
+
+      {mounted && activeRoute && pinScreenPos ? (
+        <RoutePointTooltip x={pinScreenPos.x} y={pinScreenPos.y} label={activeRoute.label} />
+      ) : null}
     </div>
   );
 }

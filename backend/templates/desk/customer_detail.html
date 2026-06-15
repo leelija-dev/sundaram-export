@@ -1,4 +1,5 @@
 {% extends "desk/base.html" %}
+{% load desk_extras %}
 {% block topbar_actions %}
 <a href="{% url 'desk:customer_edit' customer.pk %}" class="se-btn se-btn-primary">Edit</a>
 {% endblock %}
@@ -53,7 +54,7 @@
         <tr>
           <td>{{ inv.invoice_number }}</td>
           <td>{{ inv.issue_date|date:"M j, Y" }}</td>
-          <td>{{ inv.currency.symbol }} {{ inv.total }}</td>
+          <td>{{ inv|money_symbol }} {{ inv.total }}</td>
           <td><a href="{% url 'desk:invoice_detail' inv.pk %}">View</a></td>
         </tr>
         {% endfor %}

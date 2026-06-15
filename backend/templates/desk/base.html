@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ page_title|default:"Export desk" }}{% endblock %} | Sundaram Export</title>
+  <title>{% block title %}{{ page_title|default:"Export desk" }}{% endblock %} | {{ setting.COMPANY_NAME }}</title>
   <link rel="icon" type="image/png" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
   <link rel="apple-touch-icon" href="{% static setting.COMPANY_LOGO_TRANSPARENT_URL %}">
 
@@ -18,9 +18,9 @@
     <aside class="se-sidebar" id="se-sidebar" aria-label="Main navigation">
       <div class="se-sidebar-brand">
         <a href="{% url 'desk:dashboard' %}">
-          <span class="se-sidebar-logo">SE</span>
+          <span class="se-sidebar-logo">{{ setting.COMPANY_NAME_INIT }}</span>
           <span>
-            <strong>Sundaram Export</strong>
+            <strong>{{ setting.COMPANY_NAME }}</strong>
             <small>Admin portal</small>
           </span>
         </a>

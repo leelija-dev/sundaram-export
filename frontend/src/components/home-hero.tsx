@@ -76,10 +76,10 @@ export function HomeHero() {
 
       <ExportNetworkVisual />
 
-      <Container className="relative z-10 flex min-h-[min(100svh,54rem)] max-w-[1400px] flex-col justify-between px-4 pt-10 pb-6 sm:min-h-[min(92svh,58rem)] sm:px-6 sm:pt-14 sm:pb-8 lg:min-h-[min(88svh,62rem)] lg:px-8 lg:pt-16 lg:pb-10">
+      <Container className="relative z-10 flex min-h-[min(100svh,54rem)] max-w-[1400px] flex-col justify-between px-4 pt-10 pb-6 pointer-events-none sm:min-h-[min(92svh,58rem)] sm:px-6 sm:pt-14 sm:pb-8 lg:min-h-[min(88svh,62rem)] lg:px-8 lg:pt-16 lg:pb-10">
         <div className="flex flex-1 flex-col justify-center">
           <div className="grid min-w-0 items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
-            <div className="min-w-0 pt-6 sm:pt-8 md:pt-10 lg:col-span-7 lg:pt-12 xl:col-span-6">
+            <div className="pointer-events-auto min-w-0 pt-6 sm:pt-8 md:pt-10 lg:col-span-7 lg:pt-12 xl:col-span-6">
               {/* Eyebrow */}
               <div className="mb-5 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 backdrop-blur-sm sm:px-4 sm:py-2">
                 <span className="relative flex h-2 w-2">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { LoadingIndicators } from "@/components/loading-indicators";
 import { SiteConfigProvider } from "@/components/site-config-provider";
 import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { Footer, Header } from "@/components/site-ui";
@@ -34,6 +35,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SiteConfigProvider config={siteConfig}>
+          <LoadingIndicators />
           <SmoothScrollProvider>
             <Header />
             <main className="min-w-0">{children}</main>

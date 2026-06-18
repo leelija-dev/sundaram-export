@@ -10,8 +10,10 @@
   </script>
   <link rel="icon" type="{{ setting.COMPANY_LOGO_MIME }}" href="{{ setting.COMPANY_LOGO_TRANSPARENT_URL }}">
   <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
+  <script>document.documentElement.classList.add("se-fetching-active");</script>
 </head>
 <body>
+  {% include "desk/includes/page_loader.html" %}
   <div class="se-login-page">
     <button type="button" class="se-theme-btn se-login-theme" id="se-theme-btn" aria-label="Toggle color theme">
       <svg class="se-theme-icon se-theme-icon-light" viewBox="0 0 24 24" aria-hidden="true">
@@ -54,7 +56,7 @@
           <label for="id_password">Password</label>
           <input type="password" name="password" id="id_password" required autocomplete="current-password" placeholder="Enter your password">
         </div>
-        <button type="submit" class="se-btn se-btn-primary se-btn-block">Sign in</button>
+        <button type="submit" class="se-btn se-btn-primary se-btn-block" data-loading-label="Signing in…">Sign in</button>
       </form>
     </div>
   </div>
@@ -103,6 +105,6 @@
     window.seDeskSetTheme = applyTheme;
   })();
   </script>
-  <script src="{% static 'desk/desk.js' %}?v=2" defer></script>
+  <script src="{% static 'desk/desk.js' %}?v=6" defer></script>
 </body>
 </html>

@@ -41,6 +41,7 @@ function buildMediaRemotePatterns() {
 }
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   images: {
     remotePatterns: buildMediaRemotePatterns(),
   },

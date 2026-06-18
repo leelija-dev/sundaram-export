@@ -54,6 +54,7 @@ from .analytics import get_dashboard_stats
 from .company_details import get_exporter_office, resolve_exporter_company
 from .invoice_qr import invoice_qr_for_display
 from .invoice_shipping import resolve_invoice_shipping, suggest_invoice_shipping
+from .reorder import REORDER_MODELS, apply_sort_order
 from .report_present import normalize_report_display
 
 
@@ -160,6 +161,9 @@ class ProductListView(DeskMixin, SortableListMixin, ListView):
     template_name = "desk/product_list.html"
     context_object_name = "items"
     reorder_kind = "products"
+
+    def get_queryset(self):
+        return Product.objects.select_related("category").order_by("sort_order", "title")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

@@ -21,18 +21,28 @@
         return parseInt(row.dataset.id, 10);
       });
 
+      if (typeof window.seDeskFetching === "object" && window.seDeskFetching.show) {
+        window.seDeskFetching.show();
+      }
+
       fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCsrf(),
         },
+        credentials: "same-origin",
         body: JSON.stringify({ order: ids }),
       })
         .then(function (response) {
-          return response.json().then(function (data) {
-            return { ok: response.ok, data: data };
-          });
+          return response
+            .json()
+            .catch(function () {
+              return { ok: false, error: "Server error (" + response.status + ")" };
+            })
+            .then(function (data) {
+              return { ok: response.ok, data: data };
+            });
         })
         .then(function (result) {
           if (result.ok && result.data.ok) {
@@ -43,6 +53,11 @@
         })
         .catch(function () {
           showToast("Could not save order", true);
+        })
+        .finally(function () {
+          if (typeof window.seDeskFetching === "object" && window.seDeskFetching.hide) {
+            window.seDeskFetching.hide();
+          }
         });
     }
 

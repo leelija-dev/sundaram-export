@@ -2695,3 +2695,100 @@ html:not([data-theme="dark"]) .se-theme-btn .se-theme-icon-light { display: bloc
 .se-table-sub {
   font-size: 0.78rem;
 }
+
+/* ── Loading indicators ─────────────────────────────────── */
+@keyframes se-fetching-slide {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+
+@keyframes se-progress-indeterminate {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+@keyframes se-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+.se-fetching-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 200000;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+html.se-fetching-active .se-fetching-bar,
+.se-fetching-bar.is-active {
+  opacity: 1;
+}
+
+.se-fetching-bar__track {
+  height: 100%;
+  width: 33%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--se-secondary),
+    transparent
+  );
+  animation: se-fetching-slide 1.1s ease-in-out infinite;
+}
+
+.se-progress-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 199999;
+  height: 4px;
+  overflow: hidden;
+  pointer-events: none;
+  background: rgba(14, 116, 144, 0.12);
+}
+
+.se-progress-bar[hidden] {
+  display: none !important;
+}
+
+.se-progress-bar__fill {
+  height: 100%;
+  width: 0;
+  background: var(--se-secondary);
+  transition: width 0.15s ease-out;
+}
+
+.se-progress-bar.is-indeterminate .se-progress-bar__fill {
+  width: 40%;
+  animation: se-progress-indeterminate 1.2s ease-in-out infinite;
+}
+
+.se-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.se-btn.is-loading .se-btn-spinner {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: se-btn-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .se-progress-bar {
+  background: rgba(56, 189, 248, 0.14);
+}
+
+[data-theme="dark"] .se-fetching-bar__track {
+  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+}
+
+[data-theme="dark"] .se-progress-bar__fill {
+  background: #38bdf8;
+}

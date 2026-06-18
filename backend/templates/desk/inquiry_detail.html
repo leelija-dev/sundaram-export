@@ -3,7 +3,7 @@
 <div class="se-page-toolbar">
   {% if not object.customer %}
   <form method="post" action="{% url 'desk:inquiry_create_customer' object.pk %}" class="se-inline-form">{% csrf_token %}
-    <button type="submit" class="se-btn se-btn-secondary">Save as customer</button>
+    <button type="submit" class="se-btn se-btn-secondary" data-loading-label="Saving…">Save as customer</button>
   </form>
   {% else %}
   <a href="{% url 'desk:customer_detail' object.customer.pk %}" class="se-btn se-btn-secondary">View customer</a>

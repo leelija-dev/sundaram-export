@@ -9,6 +9,8 @@ import { clientSubmitInquiry } from "@/lib/api-client";
 import { clientFetchCountries, clientFetchProducts } from "@/lib/api-client";
 import type { ExportCountry } from "@/lib/api";
 import type { ExportProduct } from "@/lib/types/catalog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 type ContactFormProps = {
   variant?: "contact" | "quote";
@@ -116,7 +118,22 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
       </div>
 
       {/* Quote-specific fields – landscape layout */}
-      {variant === "quote" && (
+      {variant === "quote" && catalogLoading ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FieldSkeleton labelWidth="w-36" />
+            <FieldSkeleton labelWidth="w-40" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FieldSkeleton labelWidth="w-24" />
+            <FieldSkeleton labelWidth="w-32" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FieldSkeleton labelWidth="w-28" />
+            <div />
+          </div>
+        </>
+      ) : variant === "quote" ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Origin country / city" name="origin" required />
@@ -140,7 +157,6 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
               label="Product line"
               name="product"
               options={products.map((p) => ({ value: p.slug, label: p.title }))}
-              loading={catalogLoading}
               placeholder="Not applicable / not sure"
             />
             <Field label="Incoterms (if known)" name="incoterms" placeholder="e.g. FOB Mumbai, CIF Houston" />
@@ -151,7 +167,7 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
             <div /> {/* Spacer */}
           </div>
         </>
-      )}
+      ) : null}
 
       {/* Message – full width, reduced height for landscape */}
       <div>
@@ -182,13 +198,15 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
 
       {/* Submit button – inline on desktop, full on mobile */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <button
+        <LoadingButton
           type="submit"
-          disabled={submitting || catalogLoading}
+          loading={submitting}
+          loadingLabel={variant === "quote" ? "Submitting…" : "Sending…"}
+          disabled={catalogLoading}
           className="rounded-xl bg-gradient-to-r from-accent to-accent-light px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30 disabled:opacity-60"
         >
-          {submitting ? "Sending..." : variant === "quote" ? "Submit quote request" : "Send message"}
-        </button>
+          {variant === "quote" ? "Submit quote request" : "Send message"}
+        </LoadingButton>
         <p className="text-xs text-muted">
           We respond within one business day.
         </p>
@@ -234,20 +252,27 @@ function Field({
 }
 
 // Select field component (inherits same hover)
+function FieldSkeleton({ labelWidth = "w-24" }: { labelWidth?: string }) {
+  return (
+    <div className="space-y-2" aria-hidden>
+      <Skeleton className={cn("h-4", labelWidth)} />
+      <Skeleton className="h-11 w-full rounded-lg" />
+    </div>
+  );
+}
+
 function SelectField({
   label,
   name,
   options,
   required,
   placeholder,
-  loading,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
   required?: boolean;
   placeholder?: string;
-  loading?: boolean;
 }) {
   return (
     <div>
@@ -259,20 +284,18 @@ function SelectField({
         id={name}
         name={name}
         required={required}
-        disabled={loading}
         defaultValue=""
         className={cn(inputClass, "cursor-pointer")}
       >
         <option value="" disabled>
-          {loading ? "Loading..." : placeholder || `Select ${label.toLowerCase()}`}
+          {placeholder || `Select ${label.toLowerCase()}`}
         </option>
-        {!loading &&
-          options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        {!loading && placeholder && (
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+        {placeholder && (
           <option value="other">Other — specify in message</option>
         )}
       </select>

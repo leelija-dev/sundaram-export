@@ -13,8 +13,10 @@
   <link rel="apple-touch-icon" href="{{ setting.COMPANY_LOGO_TRANSPARENT_URL }}">
   <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
   {% block extra_css %}{% endblock %}
+  <script>document.documentElement.classList.add("se-fetching-active");</script>
 </head>
 <body>
+  {% include "desk/includes/page_loader.html" %}
   <div class="se-app">
     <div class="se-overlay" id="se-overlay" aria-hidden="true"></div>
 
@@ -220,7 +222,7 @@
     window.seDeskSetTheme = applyTheme;
   })();
   </script>
-  <script src="{% static 'desk/desk.js' %}?v=4" defer></script>
+  <script src="{% static 'desk/desk.js' %}?v=6" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

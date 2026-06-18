@@ -1,41 +1,105 @@
 {% extends "desk/base.html" %}
+{% load static %}
 {% block content %}
-<form method="post" class="se-form">
+{% url 'desk:invoice_list' as invoice_cancel_url %}
+<div class="se-form-page se-form-page-wide">
+<form method="post" class="se-form" id="se-invoice-form">
   {% csrf_token %}
-  <div class="se-card se-card-pad" style="margin-bottom:1.25rem">
-    <h2 class="se-section-title" style="margin-top:0">Client &amp; dates</h2>
+  <div class="se-card se-card-pad se-form-section">
+    <h2 class="se-section-title se-heading-block">Client &amp; dates</h2>
+    <p class="se-muted se-page-intro">Buyer tax ID is optional — overseas export customers usually do not have an Indian GSTIN.</p>
     <div class="se-grid-2">
       {% for field in form %}
-      <div class="se-field">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {{ field.errors }}
-      </div>
+        {% if field.name in invoice_client_fields %}
+        {% include "desk/includes/form_field.html" %}
+        {% endif %}
       {% endfor %}
     </div>
   </div>
+
+  <div class="se-card se-card-pad se-form-section">
+    <h2 class="se-section-title se-heading-block">Shipping &amp; export details</h2>
+    <p class="se-muted se-page-intro">These fields appear on the printed export invoice. They auto-fill from the linked inquiry and customer when available.</p>
+    <div class="se-grid-2">
+      {% for field in form %}
+        {% if field.name in invoice_shipping_fields %}
+        {% include "desk/includes/form_field.html" %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
   <div class="se-card se-card-pad">
-    <h2 class="se-section-title" style="margin-top:0">Line items</h2>
+    <div class="se-line-items-head">
+      <h2 class="se-section-title se-heading-block">Line items</h2>
+      <button type="button" class="se-btn se-btn-sm se-btn-secondary" id="se-add-invoice-line">+ Add line item</button>
+    </div>
     {{ formset.management_form }}
-    <div class="se-table-wrap">
-      <table class="se-table">
-        <thead><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Remove</th></tr></thead>
-        <tbody>
-          {% for f in formset %}
+    {% if formset.non_form_errors %}
+    <ul class="se-formset-errors">
+      {% for error in formset.non_form_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="se-table-wrap se-invoice-lines-wrap">
+      <table class="se-table se-invoice-lines-table">
+        <thead>
           <tr>
-            <td>{{ f.id }}{{ f.description }}{{ f.description.errors }}</td>
-            <td style="width:6rem">{{ f.quantity }}</td>
-            <td style="width:8rem">{{ f.unit_price }}</td>
-            <td>{% if f.DELETE %}{{ f.DELETE }}{% endif %}</td>
+            <th>Description</th>
+            <th class="se-col-qty">Qty</th>
+            <th class="se-col-price">Unit price</th>
+            <th class="se-col-line-actions">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="se-invoice-lines-body" data-formset-prefix="{{ formset.prefix }}">
+          {% for f in formset %}
+          <tr class="se-invoice-line-row{% if f.errors %} se-invoice-line-row--error{% endif %}" data-line-row data-line-existing="{% if f.instance.pk %}1{% else %}0{% endif %}">
+            <td data-label="Description">
+              {{ f.id }}
+              {{ f.description }}
+              {% if f.description.errors %}<span class="se-field-error">{{ f.description.errors|join:", " }}</span>{% endif %}
+            </td>
+            <td class="se-col-qty" data-label="Qty">
+              {{ f.quantity }}
+              {% if f.quantity.errors %}<span class="se-field-error">{{ f.quantity.errors|join:", " }}</span>{% endif %}
+            </td>
+            <td class="se-col-price" data-label="Unit price">
+              {{ f.unit_price }}
+              {% if f.unit_price.errors %}<span class="se-field-error">{{ f.unit_price.errors|join:", " }}</span>{% endif %}
+            </td>
+            <td class="se-col-line-actions" data-label="Remove">
+              {% if f.DELETE %}
+              <span class="se-line-delete-field" hidden>{{ f.DELETE }}</span>
+              {% endif %}
+              <button type="button" class="se-btn se-btn-sm se-btn-secondary se-line-remove-btn" aria-label="Remove line item">Remove</button>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    <p class="se-muted se-line-items-hint">Add as many products as needed. At least one line item is required.</p>
   </div>
-  <div class="se-form-actions">
-    <button type="submit" class="se-btn se-btn-primary">Save invoice</button>
-    <a href="{% url 'desk:invoice_list' %}" class="se-btn se-btn-secondary">Cancel</a>
+
+  <div id="se-invoice-line-empty" hidden>
+    <table>
+      <tbody>
+        <tr id="se-invoice-line-empty-row">
+          <td>{{ formset.empty_form.id }}{{ formset.empty_form.description }}</td>
+          <td class="se-col-qty">{{ formset.empty_form.quantity }}</td>
+          <td class="se-col-price">{{ formset.empty_form.unit_price }}</td>
+          <td class="se-col-line-actions">
+            <button type="button" class="se-btn se-btn-sm se-btn-secondary se-line-remove-btn" aria-label="Remove line item">Remove</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  {% include "desk/includes/form_actions.html" with cancel_url=invoice_cancel_url submit_label="Save invoice" %}
 </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'desk/invoice-formset.js' %}" defer></script>
 {% endblock %}

@@ -1,19 +1,39 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}<a href="{% url 'desk:report_add' %}" class="se-btn se-btn-primary">+ Generate report</a>{% endblock %}
 {% block content %}
+<div class="se-page-header">
+  <div class="se-page-header-main">
+    <p class="se-page-intro">Saved export business snapshots — sales, leads, buyers, and markets. Generate a report for a date range and keep it on file for reviews or management meetings.</p>
+  </div>
+  <a href="{% url 'desk:report_add' %}" class="se-btn se-btn-primary">+ Generate report</a>
+</div>
+
 <div class="se-card">
+  <div class="se-card-header se-card-header-light">Saved reports</div>
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">
       <thead>
-        <tr><th>Title</th><th>Type</th><th>Period</th><th>Created</th><th>Actions</th></tr>
+        <tr><th>Report</th><th>Type</th><th>Period</th><th>Generated</th><th></th></tr>
       </thead>
       <tbody>
         {% for item in items %}
         <tr>
-          <td data-label="Title"><strong>{{ item.title }}</strong></td>
-          <td data-label="Type">{{ item.get_report_type_display }}</td>
-          <td data-label="Period">{% if item.date_from %}{{ item.date_from|date:"M j, Y" }}{% else %}—{% endif %} – {% if item.date_to %}{{ item.date_to|date:"M j, Y" }}{% else %}—{% endif %}</td>
-          <td data-label="Created">{{ item.created_at|date:"M j, Y" }}</td>
+          <td data-label="Report">
+            <strong>{{ item.title }}</strong>
+            {% if item.generated_by %}<br><span class="se-muted se-table-sub">{{ item.generated_by.get_username }}</span>{% endif %}
+          </td>
+          <td data-label="Type">
+            <span class="se-report-type-badge se-report-type-badge--{{ item.report_type }}">{{ item.get_report_type_display }}</span>
+          </td>
+          <td data-label="Period">
+            {% if item.date_from or item.date_to %}
+            {% if item.date_from %}{{ item.date_from|date:"M j, Y" }}{% else %}…{% endif %}
+            –
+            {% if item.date_to %}{{ item.date_to|date:"M j, Y" }}{% else %}…{% endif %}
+            {% else %}
+            <span class="se-muted">All time</span>
+            {% endif %}
+          </td>
+          <td data-label="Generated">{{ item.created_at|date:"M j, Y H:i" }}</td>
           <td data-label="Actions">
             <div class="se-actions">
               <a href="{% url 'desk:report_detail' item.pk %}" class="se-btn se-btn-sm se-btn-primary">View</a>
@@ -22,7 +42,7 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="se-empty">No reports yet. <a href="{% url 'desk:report_add' %}">Generate one</a></td></tr>
+        <tr><td colspan="5" class="se-empty">No reports yet. <a href="{% url 'desk:report_add' %}">Generate your first export report</a></td></tr>
         {% endfor %}
       </tbody>
     </table>

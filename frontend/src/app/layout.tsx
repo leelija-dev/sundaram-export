@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SiteConfigProvider } from "@/components/site-config-provider";
+import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { Footer, Header } from "@/components/site-ui";
 import { site } from "@/data/site";
+import { getSiteConfig } from "@/lib/site-env";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,15 +25,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteConfig = getSiteConfig();
+
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body
         className="min-h-screen bg-background font-sans text-foreground antialiased"
         suppressHydrationWarning
       >
-        <Header />
-        <main className="min-w-0">{children}</main>
-        <Footer />
+        <SiteConfigProvider config={siteConfig}>
+          <SmoothScrollProvider>
+            <Header />
+            <main className="min-w-0">{children}</main>
+            <Footer />
+          </SmoothScrollProvider>
+        </SiteConfigProvider>
       </body>
     </html>
   );

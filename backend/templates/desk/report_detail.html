@@ -1,24 +1,22 @@
 {% extends "desk/base.html" %}
-{% load desk_extras %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'desk/report.css' %}?v=12">
+{% endblock %}
 {% block content %}
-<div class="se-card se-card-pad">
-  <div class="se-detail-list">
-    <p><strong>Type</strong> {{ report.get_report_type_display }}</p>
-    <p><strong>Period</strong> {% if report.date_from %}{{ report.date_from|date:"M j, Y" }}{% else %}All time{% endif %} – {% if report.date_to %}{{ report.date_to|date:"M j, Y" }}{% else %}Present{% endif %}</p>
-    <p><strong>Generated</strong> {{ report.created_at|date:"M j, Y H:i" }}{% if report.generated_by %} · {{ report.generated_by }}{% endif %}</p>
-    {% if report.notes %}<p><strong>Notes</strong> {{ report.notes }}</p>{% endif %}
+<div class="se-report-detail-layout">
+  <div class="se-page-toolbar se-page-toolbar--start">
+    <div class="se-page-toolbar__left">
+      <a href="{% url 'desk:report_list' %}" class="se-btn se-btn-secondary">← All reports</a>
+    </div>
+    <div class="se-page-toolbar__right">
+      <button type="button" class="se-btn se-btn-primary" onclick="window.print()">Print / PDF</button>
+      <a href="{% url 'desk:report_delete' report.pk %}" class="se-btn se-btn-secondary">Delete</a>
+    </div>
   </div>
-  <h2 class="se-section-title">Report data</h2>
-  <div class="se-card se-card-pad se-report-data" style="background:#f8fafc; margin:0">
-    {% for key, value in report.data.items %}
-    <p><strong>{{ key|title }}</strong> {{ value|format_report_value }}</p>
-    {% empty %}
-    <p class="se-muted">No data.</p>
-    {% endfor %}
+
+  <div class="se-report-preview-wrap">
+    {% include "desk/includes/report_document.html" %}
   </div>
-</div>
-<div class="se-toolbar">
-  <a href="{% url 'desk:report_list' %}" class="se-btn se-btn-secondary">← All reports</a>
-  <a href="{% url 'desk:report_delete' report.pk %}" class="se-btn se-btn-secondary">Delete</a>
 </div>
 {% endblock %}

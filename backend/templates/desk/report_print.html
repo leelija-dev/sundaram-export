@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ report.title }} | {{ setting.COMPANY_NAME }}</title>
+  <link rel="stylesheet" href="{% static 'desk/report.css' %}?v=12">
+</head>
+<body class="se-report-print-body">
+  <div class="se-report-print-page">
+    <div class="se-report-print-toolbar">
+      <div class="se-report-print-toolbar__left">
+        <a href="{% url 'desk:report_detail' report.pk %}" class="se-report-print-btn se-report-print-btn--secondary">← Back to report</a>
+      </div>
+      <div class="se-report-print-toolbar__right">
+        <button type="button" class="se-report-print-btn se-report-print-btn--primary" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+    <div class="se-report-print-shell">
+      {% include "desk/includes/report_document.html" %}
+    </div>
+  </div>
+</body>
+</html>

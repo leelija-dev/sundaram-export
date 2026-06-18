@@ -1,19 +1,32 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}
-<a href="{% url 'desk:market_add' %}" class="se-btn se-btn-primary">+ Add region</a>
-<a href="{% url 'desk:country_list' %}" class="se-btn se-btn-secondary">Export countries</a>
-{% endblock %}
 {% block content %}
-<p class="se-muted" style="margin-bottom:1rem">Optional corridors to group export countries on the website (e.g. GCC, Europe). Countries are managed separately.</p>
+<div class="se-page-header">
+  <div class="se-page-header-main">
+    <p class="se-muted se-page-intro">Optional corridors to group export countries on the website (e.g. South Asia, Eastern India). Countries are managed separately.</p>
+    <p class="se-muted se-sort-hint">Drag rows using the <span class="se-drag-handle se-drag-handle-inline" aria-hidden="true"></span> handle to set website display order.</p>
+  </div>
+  <div class="se-page-actions">
+    <a href="{% url 'desk:market_add' %}" class="se-btn se-btn-primary">+ Add region</a>
+    <a href="{% url 'desk:country_list' %}" class="se-btn se-btn-secondary">Export countries</a>
+  </div>
+</div>
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">
       <thead>
-        <tr><th>Region</th><th>Countries linked</th><th>Published</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
         <tr>
+          {% if reorder_kind %}<th class="se-drag-col" aria-label="Reorder"></th>{% endif %}
+          <th>Region</th><th>Countries linked</th><th>Published</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody{% if reorder_kind %} class="se-sortable-tbody" data-reorder-kind="{{ reorder_kind }}" data-reorder-url="{% url 'desk:reorder' reorder_kind %}"{% endif %}>
+        {% for item in items %}
+        <tr{% if reorder_kind %} data-id="{{ item.pk }}"{% endif %}>
+          {% if reorder_kind %}
+          <td class="se-drag-cell" data-label="">
+            <span class="se-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"></span>
+          </td>
+          {% endif %}
           <td data-label="Region"><strong>{{ item.name }}</strong><br><small>{{ item.slug }}</small></td>
           <td data-label="Countries">{{ item.country_count }} assigned</td>
           <td data-label="Published">{% if item.is_published %}Yes{% else %}No{% endif %}</td>
@@ -25,10 +38,11 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="se-empty">No regions yet. <a href="{% url 'desk:market_add' %}">Add one</a> or use countries only.</td></tr>
+        <tr><td colspan="{% if reorder_kind %}5{% else %}4{% endif %}" class="se-empty">No regions yet. <a href="{% url 'desk:market_add' %}">Add one</a> or use countries only.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
 {% endblock %}
+{% block extra_js %}{% include "desk/includes/sortable_scripts.html" %}{% endblock %}

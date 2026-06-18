@@ -1,0 +1,8 @@
+<div class="se-form-actions">
+  {% if cancel_url %}
+  <a href="{{ cancel_url }}" class="se-btn se-btn-secondary">{{ cancel_label|default:"Cancel" }}</a>
+  {% elif show_cancel %}
+  <a href="javascript:history.back()" class="se-btn se-btn-secondary">{{ cancel_label|default:"Cancel" }}</a>
+  {% endif %}
+  <button type="submit" class="se-btn se-btn-primary">{{ submit_label|default:"Save" }}</button>
+</div>

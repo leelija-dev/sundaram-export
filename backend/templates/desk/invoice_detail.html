@@ -1,44 +1,20 @@
 {% extends "desk/base.html" %}
-{% load desk_extras %}
-{% block topbar_actions %}
-<a href="{% url 'desk:invoice_print' invoice.pk %}" class="se-btn se-btn-secondary" target="_blank" rel="noopener">Print</a>
-<a href="{% url 'desk:invoice_edit' invoice.pk %}" class="se-btn se-btn-primary">Edit</a>
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'desk/invoice.css' %}?v=11">
 {% endblock %}
 {% block content %}
-<div class="se-card se-card-pad">
-  <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem; margin-bottom:1.5rem">
-    <div>
-      <h2 style="margin:0 0 0.5rem; color:var(--se-primary); font-size:1.35rem">{{ invoice.invoice_number }}</h2>
-      <span class="se-badge se-badge-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
-    </div>
-    <div style="text-align:right">
-      <p style="margin:0.25rem 0"><strong>Issue:</strong> {{ invoice.issue_date|date:"M j, Y" }}</p>
-      {% if invoice.due_date %}<p style="margin:0.25rem 0"><strong>Due:</strong> {{ invoice.due_date|date:"M j, Y" }}</p>{% endif %}
-    </div>
+<div class="se-page-toolbar se-page-toolbar--start">
+  <div class="se-page-toolbar__left">
+    <a href="{% url 'desk:invoice_list' %}" class="se-btn se-btn-secondary">← All invoices</a>
   </div>
-  <p><strong>Bill to</strong><br>{{ invoice.client_name }}{% if invoice.client_company %} — {{ invoice.client_company }}{% endif %}<br>
-  {{ invoice.client_email }}{% if invoice.client_address %}<br>{{ invoice.client_address }}{% endif %}</p>
-  <div class="se-table-wrap" style="margin-top:1.25rem">
-    <table class="se-table">
-      <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Amount</th></tr></thead>
-      <tbody>
-        {% for line in lines %}
-        <tr>
-          <td>{{ line.description }}</td>
-          <td>{{ line.quantity }}</td>
-          <td>{{ invoice|money_symbol }} {{ line.unit_price }}</td>
-          <td>{{ invoice|money_symbol }} {{ line.amount }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="se-page-toolbar__right">
+    <a href="{% url 'desk:invoice_print' invoice.pk %}" class="se-btn se-btn-secondary">Print / PDF</a>
+    <a href="{% url 'desk:invoice_edit' invoice.pk %}" class="se-btn se-btn-primary">Edit</a>
   </div>
-  <div style="margin-top:1.25rem; text-align:left; max-width:12rem; margin-left:auto">
-    <p style="display:flex; justify-content:space-between">Subtotal: <strong>{{ invoice|money_symbol }}{{ invoice.subtotal }}</strong></p>
-    <p style="display:flex; justify-content:space-between">Tax ({{ invoice.tax_rate }}%): <span>{{ invoice|money_symbol }}{{ invoice.tax_amount }}</span></p>
-    <p style="display:flex; justify-content:space-between; font-size:1.15rem; margin-top:0.5rem">Total: <strong>{{ invoice|money_symbol }}{{ invoice.total }}</strong></p>
-  </div>
-  {% if invoice.notes %}<p style="margin-top:1rem"><strong>Notes:</strong> {{ invoice.notes }}</p>{% endif %}
 </div>
-<a href="{% url 'desk:invoice_list' %}" class="se-btn se-btn-secondary">← All invoices</a>
+
+<div class="se-invoice-preview-wrap">
+  {% include "desk/includes/invoice_document.html" with show_status=True invoice_qr=invoice_qr %}
+</div>
 {% endblock %}

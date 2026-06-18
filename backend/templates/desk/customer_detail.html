@@ -1,17 +1,20 @@
 {% extends "desk/base.html" %}
 {% load desk_extras %}
-{% block topbar_actions %}
-<a href="{% url 'desk:customer_edit' customer.pk %}" class="se-btn se-btn-primary">Edit</a>
-{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:customer_edit' customer.pk %}" class="se-btn se-btn-primary">Edit</a>
+</div>
 <div class="se-grid-2">
   <div class="se-card se-card-pad">
-    <h2 class="se-section-title" style="margin-top:0">Customer profile</h2>
+    <h2 class="se-section-title se-heading-block">Customer profile</h2>
     <div class="se-detail-list">
       <p><strong>Company</strong> {{ customer.company_name }}</p>
       <p><strong>Contact</strong> {{ customer.contact_name|default:"—" }}</p>
       <p><strong>Email</strong> {% if customer.email %}<a href="mailto:{{ customer.email }}">{{ customer.email }}</a>{% else %}—{% endif %}</p>
       <p><strong>Phone</strong> {{ customer.phone|default:"—" }}</p>
+      {% if customer.gstin %}
+      <p><strong>Buyer tax ID</strong> {{ customer.gstin }}</p>
+      {% endif %}
       <p><strong>Type</strong> {{ customer.get_customer_type_display }}</p>
       <p><strong>Status</strong> <span class="se-badge se-badge-{{ customer.status }}">{{ customer.get_status_display }}</span></p>
       <p><strong>Export destination</strong> {{ customer.destination_display }}</p>
@@ -44,7 +47,7 @@
   </div>
 </div>
 {% if invoices %}
-<div class="se-card" style="margin-top:1.25rem">
+<div class="se-card se-mt">
   <div class="se-card-header se-card-header-light">Invoices</div>
   <div class="se-table-wrap">
     <table class="se-table">

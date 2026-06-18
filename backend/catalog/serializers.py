@@ -1,9 +1,22 @@
 from rest_framework import serializers
 
-from .models import ExportCountry, MarketRegion, Office, Product
+from .models import ExportCountry, Industry, MarketRegion, Office, Product
 
 
-class ProductListSerializer(serializers.ModelSerializer):
+class ProductImageMixin(serializers.Serializer):
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+
+
+class ProductListSerializer(ProductImageMixin, serializers.ModelSerializer):
     category = serializers.SlugField(source="category.slug", read_only=True)
 
     class Meta:
@@ -12,14 +25,16 @@ class ProductListSerializer(serializers.ModelSerializer):
             "slug",
             "title",
             "short_description",
+            "image",
             "category",
             "hs_code",
             "origins",
             "markets",
+            "created_at",
         ]
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
+class ProductDetailSerializer(ProductImageMixin, serializers.ModelSerializer):
     category = serializers.SlugField(source="category.slug", read_only=True)
 
     class Meta:
@@ -29,6 +44,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "title",
             "short_description",
             "description",
+            "image",
             "category",
             "hs_code",
             "origins",
@@ -83,3 +99,9 @@ class OfficeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Office
         fields = ["id", "region", "address", "phone", "email"]
+
+
+class IndustrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Industry
+        fields = ["slug", "name", "description", "compliance_tag"]

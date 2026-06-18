@@ -1,7 +1,9 @@
 {% extends "desk/base.html" %}
 {% load desk_extras %}
-{% block topbar_actions %}<a href="{% url 'desk:invoice_add' %}" class="se-btn se-btn-primary">+ Create invoice</a>{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:invoice_add' %}" class="se-btn se-btn-primary">+ Create invoice</a>
+</div>
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">

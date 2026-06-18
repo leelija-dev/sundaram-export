@@ -3,13 +3,13 @@
 import {
   getApiBaseUrl,
   mapProduct,
-  mapMarketRegion,
+  submitInquiry,
   unwrapList,
   type ExportCountry,
   type ExportProduct,
-  type Office,
+  type InquiryPayload,
+  type InquiryResponse,
 } from "@/lib/api";
-import type { MarketRegionCard } from "@/lib/types/catalog";
 
 const API_BASE = getApiBaseUrl();
 
@@ -26,15 +26,6 @@ type ApiProduct = {
   markets: string[];
   specifications: string[];
   packaging: string[];
-};
-
-type ApiMarketRegion = {
-  id: string;
-  name: string;
-  description: string;
-  countries: string[];
-  key_ports: string[];
-  specialties: string[];
 };
 
 async function clientGet<T>(path: string): Promise<T | null> {
@@ -59,14 +50,9 @@ export async function clientFetchCountries(): Promise<ExportCountry[]> {
   return unwrapList(data);
 }
 
-export async function clientFetchMarketRegions(): Promise<MarketRegionCard[]> {
-  const data = await clientGet<Paginated<ApiMarketRegion>>("/markets/");
-  if (!data) return [];
-  return unwrapList(data).map(mapMarketRegion);
-}
-
-export async function clientFetchOffices(): Promise<Office[]> {
-  const data = await clientGet<Paginated<Office>>("/offices/");
-  if (!data) return [];
-  return unwrapList(data);
+/** Submit contact or quote inquiry from client components. */
+export async function clientSubmitInquiry(
+  payload: InquiryPayload,
+): Promise<InquiryResponse> {
+  return submitInquiry(payload);
 }

@@ -20,6 +20,12 @@ class Customer(models.Model):
     contact_name = models.CharField(max_length=200, blank=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=64, blank=True)
+    gstin = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Buyer tax ID (optional)",
+        help_text="Leave blank for overseas buyers. Use GSTIN, VAT, or TIN only when the customer has one.",
+    )
     export_country = models.ForeignKey(
         ExportCountry,
         on_delete=models.SET_NULL,

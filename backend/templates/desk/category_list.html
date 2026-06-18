@@ -1,6 +1,8 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}<a href="{% url 'desk:category_add' %}" class="se-btn se-btn-primary">+ Add category</a>{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:category_add' %}" class="se-btn se-btn-primary">+ Add category</a>
+</div>
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">

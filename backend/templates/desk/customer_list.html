@@ -1,6 +1,8 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}<a href="{% url 'desk:customer_add' %}" class="se-btn se-btn-primary">+ Add customer</a>{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:customer_add' %}" class="se-btn se-btn-primary">+ Add customer</a>
+</div>
 <form method="get" class="se-filter-bar">
   <select name="status" aria-label="Filter by status" onchange="this.form.submit()">
     <option value="">All statuses</option>

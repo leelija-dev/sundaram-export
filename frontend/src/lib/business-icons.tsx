@@ -2,7 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import {
   ArchiveBoxIcon,
   BeakerIcon,
-  BoltIcon,
+  BuildingStorefrontIcon,
   CakeIcon,
   Cog6ToothIcon,
   CubeIcon,
@@ -11,6 +11,8 @@ import {
   GlobeAltIcon,
   Squares2X2Icon,
   SunIcon,
+  SwatchIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 
 export type BusinessIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -42,3 +44,22 @@ export function CategoryIcon({
 
 export const ALL_CATEGORIES_ICON = GlobeAltIcon;
 export const DEFAULT_PRODUCT_ICON = ArchiveBoxIcon;
+
+export const INDUSTRY_ICONS: Record<string, BusinessIcon> = {
+  "agriculture-agro-processing": SunIcon,
+  "textiles-apparel": SwatchIcon,
+  "automotive-engineering": WrenchScrewdriverIcon,
+  "chemicals-pharmaceuticals": BeakerIcon,
+  "food-seafood": ArchiveBoxIcon,
+  "retail-ecommerce": BuildingStorefrontIcon,
+  agriculture: SunIcon,
+  textiles: SwatchIcon,
+  engineering: Cog6ToothIcon,
+  chemicals: BeakerIcon,
+  "food-beverage": CakeIcon,
+  handicrafts: GiftIcon,
+};
+
+export function getIndustryIcon(slug: string): BusinessIcon {
+  return INDUSTRY_ICONS[slug] ?? CubeIcon;
+}

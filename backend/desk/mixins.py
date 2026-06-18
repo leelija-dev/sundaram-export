@@ -28,3 +28,25 @@ class DeskSuccessMessageMixin:
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Deleted successfully.")
         return super().delete(request, *args, **kwargs)
+
+
+class SortableListMixin:
+    """List pages where drag-and-drop reorder is enabled."""
+
+    reorder_kind: str | None = None
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["reorder_kind"] = self.reorder_kind
+        return ctx
+
+
+class AppendSortOrderCreateMixin:
+    """New catalog items appear at the end of the website list."""
+
+    def form_valid(self, form):
+        if form.instance.pk is None:
+            from .reorder import next_sort_order
+
+            form.instance.sort_order = next_sort_order(form.instance.__class__)
+        return super().form_valid(form)

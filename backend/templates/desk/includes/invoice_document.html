@@ -1,0 +1,244 @@
+{% load desk_extras static %}
+<article class="se-invoice-doc" aria-label="Export invoice {{ invoice.invoice_number }}">
+  <div class="exp-inv__top-band">{{ exporter_company.name|upper }}</div>
+  <div class="exp-inv__tagline">{{ exporter_company.tagline }}</div>
+
+  <div class="exp-inv__header-grid{% if invoice_qr %} exp-inv__header-grid--with-qr{% endif %}">
+    <div class="exp-inv__company-block">
+      {% if exporter_company.address_region %}
+      <p class="exp-inv__company-address"><strong>{{ exporter_company.address_region }}</strong></p>
+      <p class="exp-inv__company-address">{{ exporter_company.address_body|linebreaksbr }}</p>
+      {% elif exporter_company.address %}
+      <p class="exp-inv__company-address">{{ exporter_company.address|linebreaksbr }}</p>
+      {% endif %}
+      <div class="exp-inv__company-contact">
+        {% if exporter_company.phone %}<p>Tel: {{ exporter_company.phone }}</p>{% endif %}
+        {% if exporter_company.website %}<p>Web: {{ exporter_company.website }}</p>{% endif %}
+        {% if exporter_company.email %}<p>Email: {{ exporter_company.email }}</p>{% endif %}
+      </div>
+      {% if exporter_company.gstin %}
+      <p class="exp-inv__company-gstin"><strong>GSTIN:</strong> {{ exporter_company.gstin }}</p>
+      {% endif %}
+    </div>
+    <div class="exp-inv__logo-wrap">
+      <img src="{{ setting.COMPANY_LOGO_TRANSPARENT_URL }}" alt="{{ exporter_company.name }}" class="exp-inv__logo">
+    </div>
+    {% if invoice_qr %}
+    <div class="exp-inv__qr">
+      <img src="{{ invoice_qr.image_url }}" alt="Invoice {{ invoice_qr.title }} QR code" width="72" height="72">
+      <span class="exp-inv__qr-label">Scan to verify</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="exp-inv__title-row">
+    <div class="exp-inv__title-side"></div>
+    <h1 class="exp-inv__title">EXPORT INVOICE</h1>
+    <div class="exp-inv__title-side exp-inv__title-side--right">ORIGINAL FOR RECIPIENT</div>
+  </div>
+
+  <table class="exp-inv__table exp-inv__table--info">
+    <tbody>
+      <tr>
+        <th colspan="2">Customer Detail</th>
+        <th colspan="2">Invoice Detail</th>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">M/S</td>
+        <td class="exp-inv__value">{% if invoice.client_company %}{{ invoice.client_company }}{% else %}{{ invoice.client_name }}{% endif %}</td>
+        <td class="exp-inv__label">Invoice No.</td>
+        <td class="exp-inv__value"><strong>{{ invoice.invoice_number }}</strong>{% if show_status %} <span class="exp-inv__status exp-inv__status--{{ invoice.status }}">{{ invoice.get_status_display }}</span>{% endif %}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Address</td>
+        <td class="exp-inv__value">{{ invoice.client_address|default:"—"|linebreaksbr }}</td>
+        <td class="exp-inv__label">Invoice Date</td>
+        <td class="exp-inv__value">{{ invoice.issue_date|date:"d/m/Y" }}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Phone</td>
+        <td class="exp-inv__value">{{ invoice.client_phone|default:"—" }}</td>
+        <td class="exp-inv__label">Due Date</td>
+        <td class="exp-inv__value">{% if invoice.due_date %}{{ invoice.due_date|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Email</td>
+        <td class="exp-inv__value">{{ invoice.client_email|default:"—" }}</td>
+        {% if not invoice.client_gstin %}
+        <td class="exp-inv__label">Currency</td>
+        <td class="exp-inv__value">{% if invoice.currency %}{{ invoice.currency.code }} ({{ invoice|money_symbol }}){% else %}—{% endif %}</td>
+        {% else %}
+        <td class="exp-inv__label"></td>
+        <td class="exp-inv__value"></td>
+        {% endif %}
+      </tr>
+      {% if invoice.client_gstin %}
+      <tr>
+        <td class="exp-inv__label">Buyer tax ID</td>
+        <td class="exp-inv__value">{{ invoice.client_gstin }}</td>
+        <td class="exp-inv__label">Currency</td>
+        <td class="exp-inv__value">{% if invoice.currency %}{{ invoice.currency.code }} ({{ invoice|money_symbol }}){% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Contact Person</td>
+        <td class="exp-inv__value">{{ invoice.client_name }}</td>
+        <td class="exp-inv__label">Incoterms</td>
+        <td class="exp-inv__value">{{ shipping.incoterms }}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Place of Supply</td>
+        <td class="exp-inv__value">{{ shipping.place_of_supply }}</td>
+        <td class="exp-inv__label"></td>
+        <td class="exp-inv__value"></td>
+      </tr>
+      {% else %}
+      <tr>
+        <td class="exp-inv__label">Contact Person</td>
+        <td class="exp-inv__value">{{ invoice.client_name }}</td>
+        <td class="exp-inv__label">Incoterms</td>
+        <td class="exp-inv__value">{{ shipping.incoterms }}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Place of Supply</td>
+        <td class="exp-inv__value">{{ shipping.place_of_supply }}</td>
+        <td class="exp-inv__label"></td>
+        <td class="exp-inv__value"></td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <table class="exp-inv__table exp-inv__table--shipping">
+    <tbody>
+      <tr>
+        <th>Pre-carriage by</th>
+        <th>Place of pre-carriage</th>
+        <th>Port of loading</th>
+      </tr>
+      <tr>
+        <td>{{ shipping.pre_carriage_by }}</td>
+        <td>{{ shipping.place_pre_carriage }}</td>
+        <td>{{ shipping.port_loading }}</td>
+      </tr>
+      <tr>
+        <th>Vessel / Flight No.</th>
+        <th>Port of discharge</th>
+        <th>Final destination</th>
+      </tr>
+      <tr>
+        <td>{{ shipping.vessel_flight_no }}</td>
+        <td>{{ shipping.port_discharge }}</td>
+        <td>{{ shipping.final_destination }}</td>
+      </tr>
+      <tr>
+        <th>Country of origin</th>
+        <th>Country of final destination</th>
+        <th>Volume / shipment</th>
+      </tr>
+      <tr>
+        <td>{{ shipping.country_origin }}</td>
+        <td>{{ shipping.country_final }}</td>
+        <td>{{ shipping.volume }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="exp-inv__table exp-inv__table--lines">
+    <thead>
+      <tr>
+        <th class="exp-inv__col-sr">Sr. No.</th>
+        <th>Name of Product / Service</th>
+        <th class="exp-inv__col-hsn">HSN / SAC</th>
+        <th class="exp-inv__col-qty">Qty</th>
+        <th class="exp-inv__col-rate">Rate</th>
+        <th class="exp-inv__col-total">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+      <tr>
+        <td class="exp-inv__col-sr">{{ forloop.counter }}</td>
+        <td class="exp-inv__product-cell">
+          <strong>{{ line.description }}</strong>
+          {% if invoice.inquiry.product and forloop.first %}
+          <em class="exp-inv__product-sub">{{ invoice.inquiry.product.title }}{% if invoice.inquiry.product.hs_code %} · HS {{ invoice.inquiry.product.hs_code }}{% endif %}</em>
+          {% endif %}
+        </td>
+        <td class="exp-inv__col-hsn">{% if invoice.inquiry.product %}{{ invoice.inquiry.product.hs_code|default:"—" }}{% else %}—{% endif %}</td>
+        <td class="exp-inv__col-qty">{{ line.quantity }} PCS</td>
+        <td class="exp-inv__col-rate">{{ invoice|money_symbol }} {{ line.unit_price }}</td>
+        <td class="exp-inv__col-total">{{ invoice|money_symbol }} {{ line.amount }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="exp-inv__empty">No line items</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="exp-inv__foot-label">Total</td>
+        <td class="exp-inv__col-qty"><strong>{{ lines|sum_line_qty }}</strong></td>
+        <td></td>
+        <td class="exp-inv__col-total"><strong>{{ invoice|money_symbol }} {{ invoice.total }}</strong></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="exp-inv__summary-grid">
+    <div class="exp-inv__words-box">
+      <span class="exp-inv__box-label">Total in words</span>
+      <p>{{ invoice|invoice_amount_words }}</p>
+    </div>
+    <div class="exp-inv__amount-box">
+      <span class="exp-inv__box-label">Grand total</span>
+      <p class="exp-inv__grand-total">{% if invoice.currency %}{{ invoice.currency.code }} {% endif %}{{ invoice.total }}</p>
+      <span class="exp-inv__eoe">(E &amp; O.E.)</span>
+      {% if invoice.tax_rate and invoice.tax_rate > 0 %}
+      <p class="exp-inv__tax-note">Includes tax {{ invoice.tax_rate }}%: {{ invoice|money_symbol }} {{ invoice.tax_amount }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if setting.COMPANY_BANK_NAME or setting.COMPANY_BANK_ACCOUNT %}
+  <table class="exp-inv__table exp-inv__table--bank">
+    <tbody>
+      <tr><th colspan="4">Bank Details</th></tr>
+      <tr>
+        <td class="exp-inv__label">Bank Name</td>
+        <td class="exp-inv__value">{{ setting.COMPANY_BANK_NAME|default:"—" }}</td>
+        <td class="exp-inv__label">Branch Name</td>
+        <td class="exp-inv__value">{{ setting.COMPANY_BANK_BRANCH|default:"—" }}</td>
+      </tr>
+      <tr>
+        <td class="exp-inv__label">Account No.</td>
+        <td class="exp-inv__value">{{ setting.COMPANY_BANK_ACCOUNT|default:"—" }}</td>
+        <td class="exp-inv__label">SWIFT Code</td>
+        <td class="exp-inv__value">{{ setting.COMPANY_BANK_SWIFT|default:"—" }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="exp-inv__footer-grid">
+    <div class="exp-inv__terms">
+      <strong>Terms and Conditions</strong>
+      {% if invoice.notes %}
+      <div class="exp-inv__terms-body">{{ invoice.notes|linebreaksbr }}</div>
+      {% else %}
+      <ol class="exp-inv__terms-list">
+        <li>Subject to India jurisdiction.</li>
+        <li>Goods once shipped are not returnable.</li>
+        <li>Payment as per agreed export contract / letter of credit.</li>
+        <li>Interest @ 18% p.a. will be charged on overdue payments.</li>
+      </ol>
+      {% endif %}
+    </div>
+    <div class="exp-inv__sign-block">
+      <p>Certified that the particulars given above are true and correct.</p>
+      <p class="exp-inv__for-company">For <strong>{{ exporter_company.name|upper }}</strong></p>
+      <div class="exp-inv__sign-line"></div>
+      <span>Authorised Signatory</span>
+    </div>
+  </div>
+</article>

@@ -1,15 +1,39 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}<a href="{% url 'desk:product_add' %}" class="se-btn se-btn-primary">+ Add product</a>{% endblock %}
 {% block content %}
+{% if reorder_kind %}
+<div class="se-page-header">
+  <p class="se-muted se-sort-hint se-page-intro">Drag rows using the <span class="se-drag-handle se-drag-handle-inline" aria-hidden="true"></span> handle to set website display order.</p>
+  <div class="se-page-actions">
+    <a href="{% url 'desk:product_add' %}" class="se-btn se-btn-primary">+ Add product</a>
+  </div>
+</div>
+{% else %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:product_add' %}" class="se-btn se-btn-primary">+ Add product</a>
+</div>
+{% endif %}
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">
       <thead>
-        <tr><th>Title</th><th>Category</th><th>HS code</th><th>Published</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
         <tr>
+          {% if reorder_kind %}<th class="se-drag-col" aria-label="Reorder"></th>{% endif %}
+          <th>Image</th><th>Title</th><th>Category</th><th>HS code</th><th>Published</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody{% if reorder_kind %} class="se-sortable-tbody" data-reorder-kind="{{ reorder_kind }}" data-reorder-url="{% url 'desk:reorder' reorder_kind %}"{% endif %}>
+        {% for item in items %}
+        <tr{% if reorder_kind %} data-id="{{ item.pk }}"{% endif %}>
+          {% if reorder_kind %}
+          <td class="se-drag-cell" data-label="">
+            <span class="se-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"></span>
+          </td>
+          {% endif %}
+          <td data-label="Image">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" alt="" class="se-thumb">
+            {% else %}<span class="se-muted">—</span>{% endif %}
+          </td>
           <td data-label="Title"><strong>{{ item.title }}</strong><br><small>{{ item.slug }}</small></td>
           <td data-label="Category">{{ item.category.name|default:"—" }}</td>
           <td data-label="HS code">{{ item.hs_code|default:"—" }}</td>
@@ -22,10 +46,11 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="se-empty">No products yet. <a href="{% url 'desk:product_add' %}">Add one</a></td></tr>
+        <tr><td colspan="{% if reorder_kind %}7{% else %}6{% endif %}" class="se-empty">No products yet. <a href="{% url 'desk:product_add' %}">Add one</a></td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
 {% endblock %}
+{% block extra_js %}{% include "desk/includes/sortable_scripts.html" %}{% endblock %}

@@ -1,6 +1,16 @@
+from pathlib import Path
+
 from django.db import models
 
 from master.models import Category
+
+
+def product_image_upload_to(instance, filename):
+    ext = Path(filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+        ext = ".jpg"
+    slug = instance.slug or f"product-{instance.pk or 'new'}"
+    return f"products/{slug}{ext}"
 
 
 class Product(models.Model):
@@ -8,6 +18,12 @@ class Product(models.Model):
     title = models.CharField(max_length=200)
     short_description = models.CharField(max_length=300)
     description = models.TextField()
+    image = models.ImageField(
+        upload_to=product_image_upload_to,
+        blank=True,
+        null=True,
+        help_text="Product photo shown on the website (JPEG, PNG, or WebP, max 5 MB).",
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
@@ -102,3 +118,27 @@ class Office(models.Model):
 
     def __str__(self):
         return self.region
+
+
+class Industry(models.Model):
+    """Export sectors shown on the website homepage (sector expertise section)."""
+
+    slug = models.SlugField(max_length=120, unique=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    compliance_tag = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Short compliance label, e.g. APEDA · traceability",
+    )
+    is_published = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+        verbose_name_plural = "industries"
+
+    def __str__(self):
+        return self.name

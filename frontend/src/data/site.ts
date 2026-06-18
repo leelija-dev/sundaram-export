@@ -1,26 +1,31 @@
-/** Brand palette — used across the site via Tailwind theme tokens */
-export const brand = {
-  primary: "#0A2540",
-  secondary: "#2563EB",
-  accent: "#F59E0B",
-  background: "#FFFFFF",
-  text: "#1F2937",
-} as const;
-
+/** Static site copy — contact fields come from getSiteConfig() / useSiteConfig(). */
 export const site = {
   name: "Sundaram Export",
   shortName: "Sundaram",
   tagline: "Multinational export partner for premium products worldwide",
   description:
-    "We export premium agricultural commodities, textiles, engineering goods, and chemicals to buyers in 90+ countries — with sourcing, certification, and shipment coordination from one accountable team.",
-  email: "exports@sundaramexport.com",
-  phone: "+91 22 4000 1200",
-  phoneAlt: "+1 (713) 555 0142",
-  address: "Sundaram Trade Tower, Bandra Kurla Complex, Mumbai 400051, India",
-  addressUS: "2400 Port Commerce Parkway, Houston, TX 77029, USA",
-  founded: 1998,
+    "Agricultural commodities, textiles, engineering, and chemicals to 90+ countries — sourcing, certification, and shipment coordination from one team.",
   certifications: ["ISO 9001:2015", "FIEO Member", "APEDA Registered", "DGFT Licensed"],
 };
+
+export const socialLinks = [
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@sundaramexport",
+  },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/sundaramexport",
+  },
+  {
+    label: "X",
+    href: "https://x.com/sundaramexport",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/sundaramexport",
+  },
+] as const;
 
 export const navLinks = [
   { href: "/", label: "Home" },
@@ -30,68 +35,40 @@ export const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export const stats = [
-  { value: "90+", label: "Countries served" },
-  { value: "18K+", label: "Shipments annually" },
-  { value: "6", label: "Product divisions" },
-  { value: "24/7", label: "Operations desk" },
-];
-
 export const processSteps = [
   {
     step: "01",
     title: "Inquiry & specification",
-    description: "Share product grades, packaging, Incoterms, and destination requirements.",
+    description: "Share grades, packaging, Incoterms, and destination requirements.",
   },
   {
     step: "02",
     title: "Sourcing & compliance",
-    description: "We validate suppliers, HS codes, licenses, and destination import rules.",
+    description: "Supplier validation, HS codes, licenses, and import rules.",
   },
   {
     step: "03",
     title: "Logistics execution",
-    description: "Freight booking, documentation, insurance, and milestone tracking.",
+    description: "Freight booking, documentation, insurance, and tracking.",
   },
   {
     step: "04",
     title: "Delivery & support",
-    description: "Port-to-door coordination with post-shipment documentation and claims support.",
+    description: "Port-to-door coordination and post-shipment support.",
   },
 ];
 
 export const values = [
   {
     title: "Compliance-first",
-    description: "Every shipment is screened for sanctions, classification accuracy, and destination documentation.",
+    description: "Sanctions screening, accurate classification, and destination documentation on every shipment.",
   },
   {
     title: "Transparent pricing",
-    description: "Product and freight costs are itemized before you commit to a shipment.",
+    description: "Product and freight costs itemized before you commit.",
   },
   {
     title: "Single accountability",
-    description: "One account team owns your product supply chain from inquiry through delivery.",
-  },
-];
-
-export const offices = [
-  {
-    region: "Headquarters — India",
-    address: site.address,
-    phone: site.phone,
-    email: site.email,
-  },
-  {
-    region: "Americas",
-    address: site.addressUS,
-    phone: site.phoneAlt,
-    email: "americas@sundaramexport.com",
-  },
-  {
-    region: "Europe & MENA",
-    address: "Frankfurt Trade Hub, Mainzer Landstraße 250, 60326 Frankfurt, Germany",
-    phone: "+49 69 8000 4500",
-    email: "eu@sundaramexport.com",
+    description: "One team owns your supply chain from inquiry to delivery.",
   },
 ];

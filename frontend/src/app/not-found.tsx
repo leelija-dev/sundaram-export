@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <div className="relative min-h-[70vh] overflow-hidden bg-gradient-to-br from-white via-white to-primary/5">
       {/* Subtle background - no floating elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(37,99,235,0.03),transparent_50%),radial-gradient(circle_at_90%_80%,rgba(245,158,11,0.02),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(14,116,144,0.03),transparent_50%),radial-gradient(circle_at_90%_80%,rgba(217,119,6,0.02),transparent_50%)]" />
       
       {/* Inject keyframes */}
       <style>{`

@@ -19,6 +19,7 @@ import {
   projectLonLat,
   type MapBreakpoint,
 } from "@/lib/map-layout";
+import { brandColors, brandRgba } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
 const HUB = { ...projectLonLat(88.36, 22.57), label: "Kolkata" };
@@ -37,7 +38,7 @@ const ROUTES = [
 const ROUTE_GLOW = "#ffffff";
 const ROUTE_LINE = "#ffffff";
 const ROUTE_LINE_HOVER = "#ffffff";
-const ROUTE_POINT = "#f59e0b";
+const ROUTE_POINT = brandColors.accent;
 
 const MAP_SRC: Record<MapBreakpoint, string> = {
   mobile: "/maps/world-map-compact.svg",
@@ -105,7 +106,7 @@ function RoutePointTooltip({ x, y, label }: { x: number; y: number; label: strin
       style={{ left: x, top: y - 10, transform: "translate(-50%, -100%)" }}
       role="tooltip"
     >
-      <span className="inline-block whitespace-nowrap rounded-full border border-[#f59e0b] bg-[#0a2540]/97 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-white shadow-xl shadow-black/40 sm:text-sm">
+      <span className="inline-block whitespace-nowrap rounded-full border border-accent bg-primary/97 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-white shadow-xl shadow-black/40 sm:text-sm">
         {label}
       </span>
     </div>,
@@ -202,7 +203,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
       {breakpoint === "mobile" || breakpoint === "tablet" ? (
         <div
           className={cn(
-            "pointer-events-none absolute inset-y-0 left-0 z-[1] bg-gradient-to-r from-[#0a2540] via-[#0a2540]/88 to-transparent",
+            "pointer-events-none absolute inset-y-0 left-0 z-[1] bg-gradient-to-r from-primary via-primary/88 to-transparent",
             breakpoint === "mobile" ? "w-[72%]" : "w-[58%]"
           )}
           aria-hidden
@@ -213,11 +214,11 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
       {breakpoint === "lg" ? (
         <>
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-10 bg-gradient-to-r from-[#0a2540]/70 to-transparent sm:w-14"
+            className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-10 bg-gradient-to-r from-primary/70 to-transparent sm:w-14"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-14 bg-gradient-to-l from-[#0a2540]/50 to-transparent sm:w-20"
+            className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-14 bg-gradient-to-l from-primary/50 to-transparent sm:w-20"
             aria-hidden
           />
         </>
@@ -226,7 +227,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse ${layout.maskWidth}% ${layout.maskHeight}% at ${hubMask.hubMaskX} ${hubMask.hubMaskY}, rgba(245,158,11,0.16) 0%, rgba(37,99,235,0.08) 40%, transparent 75%)`,
+          background: `radial-gradient(ellipse ${layout.maskWidth}% ${layout.maskHeight}% at ${hubMask.hubMaskX} ${hubMask.hubMaskY}, ${brandRgba.accent(0.16)} 0%, ${brandRgba.secondary(0.08)} 40%, transparent 75%)`,
         }}
       />
 
@@ -272,7 +273,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
             strokeWidth="1"
           />
           <circle cx={HUB.x} cy={HUB.y} r={layout.hubRadius} fill="#ffffff" />
-          <circle cx={HUB.x} cy={HUB.y} r={layout.hubRadius * 0.38} fill="#0a2540" opacity="0.85" />
+          <circle cx={HUB.x} cy={HUB.y} r={layout.hubRadius * 0.38} fill={brandColors.primary} opacity="0.85" />
           <circle
             cx={HUB.x}
             cy={HUB.y}
@@ -328,7 +329,7 @@ export function ExportNetworkVisual({ className = "" }: ExportNetworkVisualProps
                   style={isHovered ? undefined : { animationDelay: blinkDelay }}
                 />
                 <circle cx={0} cy={0} r={pinR} fill={ROUTE_POINT} />
-                <circle cx={0} cy={0} r={pinR * 0.32} fill="#0a2540" opacity="0.85" />
+                <circle cx={0} cy={0} r={pinR * 0.32} fill={brandColors.primary} opacity="0.85" />
               </g>
             </g>
           );

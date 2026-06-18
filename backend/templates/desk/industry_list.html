@@ -1,0 +1,44 @@
+{% extends "desk/base.html" %}
+{% block content %}
+<div class="se-page-header">
+  <p class="se-muted se-sort-hint se-page-intro">Drag rows using the <span class="se-drag-handle se-drag-handle-inline" aria-hidden="true"></span> handle to set website display order.</p>
+  <div class="se-page-actions">
+    <a href="{% url 'desk:industry_add' %}" class="se-btn se-btn-primary">+ Add industry</a>
+  </div>
+</div>
+<div class="se-card">
+  <div class="se-table-wrap">
+    <table class="se-table se-table-cards">
+      <thead>
+        <tr>
+          {% if reorder_kind %}<th class="se-drag-col" aria-label="Reorder"></th>{% endif %}
+          <th>Name</th><th>Compliance tag</th><th>Published</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody{% if reorder_kind %} class="se-sortable-tbody" data-reorder-kind="{{ reorder_kind }}" data-reorder-url="{% url 'desk:reorder' reorder_kind %}"{% endif %}>
+        {% for item in items %}
+        <tr{% if reorder_kind %} data-id="{{ item.pk }}"{% endif %}>
+          {% if reorder_kind %}
+          <td class="se-drag-cell" data-label="">
+            <span class="se-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"></span>
+          </td>
+          {% endif %}
+          <td data-label="Name"><strong>{{ item.name }}</strong></td>
+          <td data-label="Compliance tag">{{ item.compliance_tag|default:"—" }}</td>
+          <td data-label="Published">{% if item.is_published %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <div class="se-actions">
+              <a href="{% url 'desk:industry_edit' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Edit</a>
+              <a href="{% url 'desk:industry_delete' item.pk %}" class="se-btn se-btn-sm se-btn-secondary">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if reorder_kind %}5{% else %}4{% endif %}" class="se-empty">No industries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}{% include "desk/includes/sortable_scripts.html" %}{% endblock %}

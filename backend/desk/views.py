@@ -1,9 +1,12 @@
 from decimal import Decimal
+import json
 
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -15,10 +18,10 @@ from django.views.generic import (
     View,
 )
 
-from catalog.models import ExportCountry, MarketRegion, Office, Product
+from catalog.models import ExportCountry, Industry, MarketRegion, Office, Product
 from customers.models import Customer
 from documents.models import ExportReport, Invoice
-from documents.services import generate_report_data
+from documents.services import REPORT_TYPE_HELP, generate_report_data
 from inquiries.models import Inquiry
 
 from master.models import Category, Currency
@@ -31,13 +34,58 @@ from .forms import (
     ExportReportForm,
     InquiryStatusForm,
     InvoiceForm,
-    InvoiceLineFormSet,
+    INVOICE_CLIENT_FIELDS,
+    INVOICE_SHIPPING_FIELDS,
+    build_invoice_line_formset,
     MarketRegionForm,
+    IndustryForm,
     OfficeForm,
     ProductForm,
+    ProfileForm,
+    DeskPasswordChangeForm,
 )
-from .mixins import DeskMixin, DeskSuccessMessageMixin
-from .stats import get_dashboard_stats
+from .mixins import (
+    AppendSortOrderCreateMixin,
+    DeskMixin,
+    DeskSuccessMessageMixin,
+    SortableListMixin,
+)
+from .analytics import get_dashboard_stats
+from .company_details import get_exporter_office, resolve_exporter_company
+from .invoice_qr import invoice_qr_for_display
+from .invoice_shipping import resolve_invoice_shipping, suggest_invoice_shipping
+from .report_present import normalize_report_display
+
+
+class InvoiceDisplayMixin:
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "currency",
+                "inquiry",
+                "inquiry__product",
+                "inquiry__customer",
+                "inquiry__customer__export_country",
+            )
+            .prefetch_related("lines")
+        )
+
+    def get_invoice_context(self):
+        exporter_office = get_exporter_office()
+        verify_token = self.kwargs.get("token")
+        return {
+            "lines": self.object.lines.all(),
+            "exporter_office": exporter_office,
+            "exporter_company": resolve_exporter_company(exporter_office),
+            "shipping": resolve_invoice_shipping(self.object, exporter_office),
+            "invoice_qr": invoice_qr_for_display(
+                self.object,
+                getattr(self, "request", None),
+                verify_token=verify_token,
+            ),
+        }
 
 
 # ——— Dashboard ———
@@ -47,19 +95,71 @@ class DashboardView(DeskMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["dashboard"] = get_dashboard_stats()
+        ctx["dashboard"] = get_dashboard_stats(self.request)
         ctx["nav_section"] = "dashboard"
         ctx["page_title"] = "Analytics"
         return ctx
 
 
+# ——— Profile ———
+
+class ProfileView(DeskMixin, View):
+    template_name = "desk/profile.html"
+
+    def _context(self, request, profile_form=None, password_form=None):
+        user = request.user
+        return {
+            "profile_form": profile_form or ProfileForm(instance=user),
+            "password_form": password_form or DeskPasswordChangeForm(user=user),
+            "nav_section": "profile",
+            "page_title": "My profile",
+            "profile_user": user,
+        }
+
+    def get(self, request):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request):
+        if request.POST.get("form_type") == "password":
+            password_form = DeskPasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Password updated.")
+                return redirect("desk:profile")
+            return render(
+                request,
+                self.template_name,
+                self._context(
+                    request,
+                    profile_form=ProfileForm(instance=request.user),
+                    password_form=password_form,
+                ),
+            )
+
+        profile_form = ProfileForm(request.POST, instance=request.user)
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, "Profile updated.")
+            return redirect("desk:profile")
+        return render(
+            request,
+            self.template_name,
+            self._context(
+                request,
+                profile_form=profile_form,
+                password_form=DeskPasswordChangeForm(user=request.user),
+            ),
+        )
+
+
 # ——— Products ———
 
-class ProductListView(DeskMixin, ListView):
+class ProductListView(DeskMixin, SortableListMixin, ListView):
     model = Product
     template_name = "desk/product_list.html"
     context_object_name = "items"
-    paginate_by = 20
+    reorder_kind = "products"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -68,7 +168,7 @@ class ProductListView(DeskMixin, ListView):
         return ctx
 
 
-class ProductCreateView(DeskMixin, DeskSuccessMessageMixin, CreateView):
+class ProductCreateView(DeskMixin, AppendSortOrderCreateMixin, DeskSuccessMessageMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = "desk/form.html"
@@ -111,14 +211,14 @@ class ProductDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
 
 # ——— Export countries ———
 
-class CountryListView(DeskMixin, ListView):
+class CountryListView(DeskMixin, SortableListMixin, ListView):
     model = ExportCountry
     template_name = "desk/country_list.html"
     context_object_name = "items"
-    paginate_by = 25
+    reorder_kind = "countries"
 
     def get_queryset(self):
-        return ExportCountry.objects.select_related("region")
+        return ExportCountry.objects.select_related("region").order_by("sort_order", "name")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -127,7 +227,7 @@ class CountryListView(DeskMixin, ListView):
         return ctx
 
 
-class CountryCreateView(DeskMixin, DeskSuccessMessageMixin, CreateView):
+class CountryCreateView(DeskMixin, AppendSortOrderCreateMixin, DeskSuccessMessageMixin, CreateView):
     model = ExportCountry
     form_class = ExportCountryForm
     template_name = "desk/form.html"
@@ -170,11 +270,11 @@ class CountryDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
 
 # ——— Market regions (optional grouping) ———
 
-class MarketListView(DeskMixin, ListView):
+class MarketListView(DeskMixin, SortableListMixin, ListView):
     model = MarketRegion
     template_name = "desk/market_list.html"
     context_object_name = "items"
-    paginate_by = 20
+    reorder_kind = "regions"
 
     def get_queryset(self):
         from django.db.models import Count
@@ -190,7 +290,7 @@ class MarketListView(DeskMixin, ListView):
         return ctx
 
 
-class MarketCreateView(DeskMixin, DeskSuccessMessageMixin, CreateView):
+class MarketCreateView(DeskMixin, AppendSortOrderCreateMixin, DeskSuccessMessageMixin, CreateView):
     model = MarketRegion
     form_class = MarketRegionForm
     template_name = "desk/form.html"
@@ -284,6 +384,62 @@ class OfficeDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
         ctx["nav_section"] = "offices"
         ctx["page_title"] = "Delete office"
         ctx["cancel_url"] = reverse("desk:office_list")
+        return ctx
+
+
+# ——— Industries ———
+
+class IndustryListView(DeskMixin, SortableListMixin, ListView):
+    model = Industry
+    template_name = "desk/industry_list.html"
+    context_object_name = "items"
+    reorder_kind = "industries"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "industries"
+        ctx["page_title"] = "Industries"
+        return ctx
+
+
+class IndustryCreateView(DeskMixin, AppendSortOrderCreateMixin, DeskSuccessMessageMixin, CreateView):
+    model = Industry
+    form_class = IndustryForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:industry_list")
+    success_message = "Industry added."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "industries"
+        ctx["page_title"] = "Add industry"
+        return ctx
+
+
+class IndustryUpdateView(DeskMixin, DeskSuccessMessageMixin, UpdateView):
+    model = Industry
+    form_class = IndustryForm
+    template_name = "desk/form.html"
+    success_url = reverse_lazy("desk:industry_list")
+    success_message = "Industry updated."
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "industries"
+        ctx["page_title"] = f"Edit: {self.object.name}"
+        return ctx
+
+
+class IndustryDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
+    model = Industry
+    template_name = "desk/confirm_delete.html"
+    success_url = reverse_lazy("desk:industry_list")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["nav_section"] = "industries"
+        ctx["page_title"] = "Delete industry"
+        ctx["cancel_url"] = reverse("desk:industry_list")
         return ctx
 
 
@@ -479,7 +635,7 @@ class InvoiceListView(DeskMixin, ListView):
         return ctx
 
 
-class InvoiceDetailView(DeskMixin, DetailView):
+class InvoiceDetailView(InvoiceDisplayMixin, DeskMixin, DetailView):
     model = Invoice
     template_name = "desk/invoice_detail.html"
     context_object_name = "invoice"
@@ -488,19 +644,71 @@ class InvoiceDetailView(DeskMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx["nav_section"] = "invoices"
         ctx["page_title"] = self.object.invoice_number
-        ctx["lines"] = self.object.lines.all()
+        ctx.update(self.get_invoice_context())
         return ctx
 
 
-class InvoicePrintView(DeskMixin, DetailView):
+class InvoicePrintView(InvoiceDisplayMixin, DeskMixin, DetailView):
     model = Invoice
     template_name = "desk/invoice_print.html"
     context_object_name = "invoice"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["lines"] = self.object.lines.all()
+        ctx.update(self.get_invoice_context())
         return ctx
+
+
+class InvoiceVerifyView(InvoiceDisplayMixin, DetailView):
+    """Public signed link from invoice QR — same print layout, no desk login."""
+
+    model = Invoice
+    template_name = "desk/invoice_print.html"
+    context_object_name = "invoice"
+
+    def get_object(self, queryset=None):
+        from .invoice_qr import resolve_invoice_from_verify_token
+
+        invoice = resolve_invoice_from_verify_token(self.kwargs["token"])
+        if invoice is None:
+            raise Http404("This invoice link is invalid or has expired.")
+        return invoice
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(self.get_invoice_context())
+        ctx["public_verify"] = True
+        return ctx
+
+
+class InvoiceQrImageView(DeskMixin, View):
+    def get(self, request, pk):
+        from .invoice_qr import invoice_qr_needed, render_invoice_qr_png
+
+        invoice = get_object_or_404(Invoice, pk=pk)
+        if not invoice_qr_needed(invoice):
+            raise Http404()
+        return HttpResponse(
+            render_invoice_qr_png(invoice, request),
+            content_type="image/png",
+        )
+
+
+class InvoiceVerifyQrImageView(View):
+    def get(self, request, token):
+        from .invoice_qr import (
+            invoice_qr_needed,
+            render_invoice_qr_png,
+            resolve_invoice_from_verify_token,
+        )
+
+        invoice = resolve_invoice_from_verify_token(token)
+        if invoice is None or not invoice_qr_needed(invoice):
+            raise Http404()
+        return HttpResponse(
+            render_invoice_qr_png(invoice, request),
+            content_type="image/png",
+        )
 
 
 class InvoiceCreateView(DeskMixin, View):
@@ -513,19 +721,31 @@ class InvoiceCreateView(DeskMixin, View):
             inquiry = Inquiry.objects.filter(pk=inquiry_id).first()
 
         form = InvoiceForm(instance=None)
+        office = get_exporter_office()
         if inquiry:
+            customer = inquiry.customer if inquiry.customer_id else None
             form.initial = {
                 "inquiry": inquiry,
                 "client_name": inquiry.name,
                 "client_company": inquiry.company,
                 "client_email": inquiry.email,
+                "client_phone": inquiry.phone or (customer.phone if customer else ""),
+                **suggest_invoice_shipping(
+                    inquiry,
+                    office,
+                    customer,
+                ),
             }
-        formset = InvoiceLineFormSet(instance=None)
+            if customer and customer.gstin:
+                form.initial["client_gstin"] = customer.gstin
+        else:
+            form.initial.update(suggest_invoice_shipping(None, office))
+        formset = build_invoice_line_formset(instance=None)
         return self._render(request, form, formset, "Create invoice")
 
     def post(self, request):
         form = InvoiceForm(request.POST)
-        formset = InvoiceLineFormSet(request.POST)
+        formset = build_invoice_line_formset(instance=None, data=request.POST)
         if form.is_valid() and formset.is_valid():
             return self._save(request, form, formset)
         return self._render(request, form, formset, "Create invoice")
@@ -549,7 +769,14 @@ class InvoiceCreateView(DeskMixin, View):
         return render(
             request,
             self.template_name,
-            {"form": form, "formset": formset, "page_title": title, "nav_section": "invoices"},
+            {
+                "form": form,
+                "formset": formset,
+                "page_title": title,
+                "nav_section": "invoices",
+                "invoice_client_fields": INVOICE_CLIENT_FIELDS,
+                "invoice_shipping_fields": INVOICE_SHIPPING_FIELDS,
+            },
         )
 
 
@@ -562,13 +789,13 @@ class InvoiceUpdateView(DeskMixin, View):
     def get(self, request, pk):
         invoice = self.get_object(pk)
         form = InvoiceForm(instance=invoice)
-        formset = InvoiceLineFormSet(instance=invoice)
+        formset = build_invoice_line_formset(instance=invoice)
         return self._render(request, invoice, form, formset, f"Edit {invoice.invoice_number}")
 
     def post(self, request, pk):
         invoice = self.get_object(pk)
         form = InvoiceForm(request.POST, instance=invoice)
-        formset = InvoiceLineFormSet(request.POST, instance=invoice)
+        formset = build_invoice_line_formset(instance=invoice, data=request.POST)
         if form.is_valid() and formset.is_valid():
             return self._save(request, invoice, form, formset)
         return self._render(request, invoice, form, formset, f"Edit {invoice.invoice_number}")
@@ -594,6 +821,8 @@ class InvoiceUpdateView(DeskMixin, View):
                 "invoice": invoice,
                 "page_title": title,
                 "nav_section": "invoices",
+                "invoice_client_fields": INVOICE_CLIENT_FIELDS,
+                "invoice_shipping_fields": INVOICE_SHIPPING_FIELDS,
             },
         )
 
@@ -734,7 +963,7 @@ class ReportListView(DeskMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["nav_section"] = "reports"
-        ctx["page_title"] = "Reports"
+        ctx["page_title"] = "Export reports"
         return ctx
 
 
@@ -747,7 +976,12 @@ class ReportCreateView(DeskMixin, CreateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["nav_section"] = "reports"
-        ctx["page_title"] = "Generate report"
+        ctx["page_title"] = "Generate export report"
+        ctx["report_type_help"] = REPORT_TYPE_HELP
+        ctx["report_types"] = [
+            {"value": value, "label": label, "help": REPORT_TYPE_HELP.get(value, "")}
+            for value, label in ExportReport.ReportType.choices
+        ]
         return ctx
 
     def form_valid(self, form):
@@ -757,7 +991,8 @@ class ReportCreateView(DeskMixin, CreateView):
             report.report_type, report.date_from, report.date_to
         )
         if not report.title:
-            report.title = report.get_report_type_display()
+            period = report.data.get("period", {}).get("label", "")
+            report.title = f"{report.get_report_type_display()} — {period}"
         report.save()
         messages.success(self.request, "Report generated.")
         return redirect("desk:report_detail", pk=report.pk)
@@ -772,6 +1007,18 @@ class ReportDetailView(DeskMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx["nav_section"] = "reports"
         ctx["page_title"] = self.object.title
+        ctx["report_display"] = normalize_report_display(self.object.data)
+        return ctx
+
+
+class ReportPrintView(DeskMixin, DetailView):
+    model = ExportReport
+    template_name = "desk/report_print.html"
+    context_object_name = "report"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["report_display"] = normalize_report_display(self.object.data)
         return ctx
 
 
@@ -786,3 +1033,36 @@ class ReportDeleteView(DeskMixin, DeskSuccessMessageMixin, DeleteView):
         ctx["page_title"] = "Delete report"
         ctx["cancel_url"] = reverse("desk:report_list")
         return ctx
+
+
+class ReorderView(DeskMixin, View):
+    """Persist drag-and-drop order from sortable desk lists."""
+
+    def post(self, request, kind):
+        model = REORDER_MODELS.get(kind)
+        if model is None:
+            return JsonResponse({"ok": False, "error": "Unknown list."}, status=400)
+
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+            ordered_ids = payload.get("order", [])
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({"ok": False, "error": "Invalid request."}, status=400)
+
+        if not isinstance(ordered_ids, list) or not ordered_ids:
+            return JsonResponse({"ok": False, "error": "No order provided."}, status=400)
+
+        try:
+            ordered_ids = [int(pk) for pk in ordered_ids]
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False, "error": "Invalid item ids."}, status=400)
+
+        if len(set(ordered_ids)) != len(ordered_ids):
+            return JsonResponse({"ok": False, "error": "Duplicate ids."}, status=400)
+
+        valid_ids = set(model.objects.filter(pk__in=ordered_ids).values_list("pk", flat=True))
+        if len(valid_ids) != len(ordered_ids):
+            return JsonResponse({"ok": False, "error": "Unknown item in list."}, status=400)
+
+        apply_sort_order(model, ordered_ids)
+        return JsonResponse({"ok": True})

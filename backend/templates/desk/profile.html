@@ -1,0 +1,55 @@
+{% extends "desk/base.html" %}
+{% block page_subtitle %}<p class="se-topbar-subtitle">Manage your account details and password</p>{% endblock %}
+{% block content %}
+<div class="se-form-page">
+  <div class="se-grid-2 se-profile-grid">
+    <div class="se-card se-card-pad">
+      <h2 class="se-section-title se-heading-block">Account overview</h2>
+      <div class="se-detail-list">
+        <p><strong>Username</strong> {{ profile_user.get_username }}</p>
+        <p><strong>Full name</strong> {{ profile_user.get_full_name|default:"—" }}</p>
+        <p><strong>Email</strong> {{ profile_user.email|default:"—" }}</p>
+        <p><strong>Role</strong>
+          {% if profile_user.is_superuser %}
+          <span class="se-badge se-badge-won">Superuser</span>
+          {% elif profile_user.is_staff %}
+          <span class="se-badge se-badge-active">Staff</span>
+          {% else %}
+          <span class="se-badge se-badge-inactive">User</span>
+          {% endif %}
+        </p>
+        <p><strong>Last login</strong> {{ profile_user.last_login|date:"M j, Y g:i A"|default:"—" }}</p>
+        <p class="se-muted">Member since {{ profile_user.date_joined|date:"M j, Y" }}</p>
+      </div>
+    </div>
+
+    <div class="se-card se-card-pad">
+      <h2 class="se-section-title se-heading-block">Personal details</h2>
+      <form method="post" class="se-form">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="profile">
+        <div class="se-form-fields">
+          {% for field in profile_form %}
+          {% include "desk/includes/form_field.html" %}
+          {% endfor %}
+        </div>
+        {% include "desk/includes/form_actions.html" with submit_label="Save profile" %}
+      </form>
+    </div>
+  </div>
+
+  <div class="se-card se-card-pad se-mt">
+    <h2 class="se-section-title se-heading-block">Change password</h2>
+      <form method="post" class="se-form">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="password">
+      <div class="se-form-fields">
+        {% for field in password_form %}
+        {% include "desk/includes/form_field.html" %}
+        {% endfor %}
+      </div>
+      {% include "desk/includes/form_actions.html" with submit_label="Update password" %}
+    </form>
+  </div>
+</div>
+{% endblock %}

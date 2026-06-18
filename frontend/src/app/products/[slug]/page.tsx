@@ -1,20 +1,16 @@
-import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ProductDetailHero } from "@/components/product-detail-hero";
+import { ProductImage } from "@/components/product-image";
 import {
   Container,
   DetailLayout,
   DetailList,
-  PageHero,
   QuoteSidebar,
   PageSection,
-  TrustBadge,
 } from "@/components/site-ui";
-import { CategoryIcon } from "@/lib/business-icons";
 import { fetchProductBySlug, fetchProducts } from "@/lib/api";
 import { getProductImage } from "@/lib/product-images";
 import { formatCategoryLabel } from "@/lib/types/catalog";
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -41,51 +37,39 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await fetchProductBySlug(slug);
   if (!product) notFound();
 
-  const imageSrc = getProductImage(product.slug, product.category);
+  const imageSrc = getProductImage(product.slug, product.category, product.imageUrl);
   const categoryLabel = formatCategoryLabel(product.category);
+  const heroLead = product.shortDescription || product.description;
 
   return (
     <>
-      <PageHero
-        eyebrow={
-          <span className="inline-flex items-center gap-2">
-            <CategoryIcon category={product.category} className="h-6 w-6 text-accent" />
-            <span>{categoryLabel}</span>
-          </span>
-        }
+      <ProductDetailHero
         title={product.title}
-        description={product.description}
-      >
-        <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/70">
-          <TrustBadge className="rounded-full bg-white/10 px-3 py-1 text-white/90">
-            Verified Export Quality
-          </TrustBadge>
-          <TrustBadge className="rounded-full bg-white/10 px-3 py-1 text-white/90">
-            Global Shipment Ready
-          </TrustBadge>
-        </div>
-      </PageHero>
+        lead={heroLead}
+        category={product.category}
+        categoryLabel={categoryLabel}
+        imageSrc={imageSrc}
+      />
 
       <PageSection className="animate-fade-up">
         <Container>
-          <Link
-            href="/products"
-            className="group mb-6 inline-flex items-center gap-1 text-sm font-medium text-secondary transition-all hover:gap-2 hover:text-primary sm:mb-8"
-          >
-            ← <span>Back to all products</span>
-          </Link>
-
           <DetailLayout sidebar={<QuoteSidebar subject={product.title} />}>
             <div className="space-y-8">
+              {product.description && product.description !== product.shortDescription && (
+                <div className="rounded-2xl border border-border/70 bg-surface/50 p-5 sm:p-6">
+                  <h2 className="text-base font-semibold text-primary sm:text-lg">About this product</h2>
+                  <p className="mt-3 text-base leading-relaxed text-muted sm:text-lg">{product.description}</p>
+                </div>
+              )}
+
               <div className="relative overflow-hidden rounded-2xl bg-surface shadow-inner">
                 <div className="relative aspect-[16/10] w-full">
-                  <Image
+                  <ProductImage
                     src={imageSrc}
                     alt={product.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     className="object-cover"
-                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                   <p className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-primary shadow-sm">
@@ -96,7 +80,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
               {product.hsCode && (
                 <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted">HS Code</p>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-muted">HS Code</p>
                   <p className="mt-1 font-mono text-lg font-medium text-foreground">{product.hsCode}</p>
                 </div>
               )}
@@ -145,13 +129,6 @@ export default async function ProductDetailPage({ params }: Props) {
                 </div>
               )}
 
-              <div className="mt-8 flex items-start justify-center gap-2 rounded-xl border border-accent/20 bg-accent/5 p-4 text-center text-sm text-muted">
-                <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
-                <p>
-                  <span className="font-semibold text-accent">Export‑ready documentation</span>
-                  {" — "}Including COO, phytosanitary, test reports, and BL coordination.
-                </p>
-              </div>
             </div>
           </DetailLayout>
         </Container>

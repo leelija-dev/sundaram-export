@@ -1,0 +1,134 @@
+<div class="se-export-report-shell">
+  <table class="se-erpt-layout-table">
+    <thead class="se-erpt-layout-thead">
+      <tr>
+        <td>
+          <div class="se-erpt-print-header">
+            <div class="se-erpt-print-header-inner">
+              {% if setting.COMPANY_LOGO_URL %}
+              <div class="se-erpt-print-header-logo">
+                <img src="{{ setting.COMPANY_LOGO_URL }}" alt="">
+              </div>
+              {% endif %}
+              <div class="se-erpt-print-header-main">
+                <span class="se-erpt-print-header-eyebrow">{{ setting.COMPANY_NAME }} · Export business report</span>
+                <span class="se-erpt-print-header-title">{{ report.title }}</span>
+              </div>
+              <div class="se-erpt-print-header-meta">
+                <span class="se-erpt-print-header-type">{{ report.get_report_type_display }}</span>
+                <span class="se-erpt-print-header-period">{{ report_display.period.label }}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tbody class="se-erpt-layout-tbody">
+      <tr>
+        <td>
+          <article class="se-export-report" aria-label="{{ report.title }}">
+            <header class="se-erpt-header">
+              <div class="se-erpt-header-top">
+                {% if setting.COMPANY_LOGO_URL %}
+                <div class="se-erpt-logo">
+                  <img src="{{ setting.COMPANY_LOGO_URL }}" alt="{{ setting.COMPANY_NAME }}">
+                </div>
+                {% endif %}
+                <div class="se-erpt-header-text">
+                  <p class="se-erpt-eyebrow">{{ setting.COMPANY_NAME }} · Export business report</p>
+                  <h1 class="se-erpt-title">{{ report.title }}</h1>
+                </div>
+              </div>
+              <p class="se-erpt-summary">{{ report_display.summary }}</p>
+              <dl class="se-erpt-meta">
+                <div>
+                  <dt>Report type</dt>
+                  <dd><span class="se-report-type-badge se-report-type-badge--{{ report.report_type }}">{{ report.get_report_type_display }}</span></dd>
+                </div>
+                <div>
+                  <dt>Period</dt>
+                  <dd>{{ report_display.period.label }}</dd>
+                </div>
+                <div>
+                  <dt>Generated</dt>
+                  <dd>{{ report.created_at|date:"M j, Y H:i" }}{% if report.generated_by %} · {{ report.generated_by.get_username }}{% endif %}</dd>
+                </div>
+              </dl>
+            </header>
+
+            <div class="se-export-report-body">
+              {% if report_display.kpis %}
+              <section class="se-erpt-kpis" aria-label="Key metrics">
+                {% for kpi in report_display.kpis %}
+                <article class="se-erpt-kpi">
+                  <span class="se-erpt-kpi-label">{{ kpi.label }}</span>
+                  <span class="se-erpt-kpi-value">{{ kpi.value }}</span>
+                  {% if kpi.note %}<span class="se-erpt-kpi-note">{{ kpi.note }}</span>{% endif %}
+                </article>
+                {% endfor %}
+              </section>
+              {% endif %}
+
+              {% for section in report_display.sections %}
+              <section class="se-erpt-section">
+                <h2 class="se-erpt-section-title">{{ section.title }}</h2>
+                {% if section.type == "table" and section.rows %}
+                <div class="se-erpt-table-wrap">
+                  <table class="se-erpt-table">
+                    <thead>
+                      <tr>
+                        {% for header in section.headers %}
+                        <th>{{ header }}</th>
+                        {% endfor %}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for row in section.rows %}
+                      <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                {% elif section.type == "key_value" and section.items %}
+                <dl class="se-erpt-kv">
+                  {% for item in section.items %}
+                  <div>
+                    <dt>{{ item.label }}</dt>
+                    <dd>{{ item.value }}</dd>
+                  </div>
+                  {% endfor %}
+                </dl>
+                {% else %}
+                <p class="se-erpt-muted">No data for this section.</p>
+                {% endif %}
+              </section>
+              {% endfor %}
+
+              {% if report.notes %}
+              <section class="se-erpt-section se-erpt-notes">
+                <h2 class="se-erpt-section-title">Executive notes</h2>
+                <div class="se-erpt-notes-box">{{ report.notes|linebreaksbr }}</div>
+              </section>
+              {% endif %}
+            </div>
+          </article>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer class="se-erpt-footer">
+    <span class="se-erpt-footer-brand">{{ setting.COMPANY_NAME }}</span>
+    {% if setting.COMPANY_WEBSITE %}
+    <span class="se-erpt-footer-site">{{ setting.COMPANY_WEBSITE }}</span>
+    {% else %}
+    <span class="se-erpt-footer-site" aria-hidden="true"></span>
+    {% endif %}
+    <span class="se-erpt-footer-legal">Confidential — for internal business use</span>
+    <span class="se-erpt-footer-page"></span>
+  </footer>
+</div>

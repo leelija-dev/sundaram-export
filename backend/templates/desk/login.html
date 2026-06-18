@@ -5,67 +5,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sign in | {{ setting.COMPANY_NAME }}</title>
+  <script>
+  (function(){var k='se-desk-theme',r=document.documentElement;try{var t=localStorage.getItem(k);if(t!=='light'&&t!=='dark')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';r.setAttribute('data-theme',t);r.style.colorScheme=t;}catch(e){r.setAttribute('data-theme','light');r.style.colorScheme='light';}})();
+  </script>
+  <link rel="icon" type="{{ setting.COMPANY_LOGO_MIME }}" href="{{ setting.COMPANY_LOGO_TRANSPARENT_URL }}">
   <link rel="stylesheet" href="{% static 'desk/desk.css' %}">
-  <style>
-    .se-login-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      background: linear-gradient(145deg, #0a2540 0%, #1e3a5f 50%, #2563eb 100%);
-    }
-    .se-login-card {
-      width: 100%;
-      max-width: 420px;
-      background: #fff;
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 25px 50px rgba(10, 37, 64, 0.25);
-    }
-    .se-login-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-    .se-login-logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #2563eb, #f59e0b);
-      color: #fff;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-    }
-    .se-login-brand h1 { margin: 0; font-size: 1.25rem; color: #0a2540; }
-    .se-login-brand p { margin: 0.15rem 0 0; font-size: 0.85rem; color: #64748b; }
-    .se-login-err {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-    }
-    .se-login-foot {
-      margin-top: 1.5rem;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #64748b;
-    }
-  </style>
 </head>
 <body>
   <div class="se-login-page">
+    <button type="button" class="se-theme-btn se-login-theme" id="se-theme-btn" aria-label="Toggle color theme">
+      <svg class="se-theme-icon se-theme-icon-light" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+        <path d="M12 1.5v2.25M12 20.25v2.25M4.22 4.22l1.59 1.59M18.19 18.19l1.59 1.59M1.5 12h2.25M20.25 12h2.25M4.22 19.78l1.59-1.59M18.19 5.81l1.59-1.59" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      </svg>
+      <svg class="se-theme-icon se-theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a6.8 6.8 0 0 0 11.5 11.5z"></path>
+      </svg>
+    </button>
     <div class="se-login-card">
       <div class="se-login-brand">
-          <span class="se-login-logo">{{ setting.COMPANY_NAME_INIT }}</span>
-          <div>
+        <img
+          src="{{ setting.COMPANY_LOGO_TRANSPARENT_URL }}"
+          alt="{{ setting.COMPANY_NAME }}"
+          class="se-login-logo"
+          width="50"
+          height="50"
+        >
+        <div>
           <h1>{{ setting.COMPANY_NAME }}</h1>
           <p>Admin management portal</p>
         </div>
@@ -86,12 +52,57 @@
         </div>
         <div class="se-field">
           <label for="id_password">Password</label>
-          <input type="password" name="password" id="id_password" required autocomplete="current-password">
+          <input type="password" name="password" id="id_password" required autocomplete="current-password" placeholder="Enter your password">
         </div>
         <button type="submit" class="se-btn se-btn-primary se-btn-block">Sign in</button>
       </form>
-      <p class="se-login-foot"><a href="/admin/">Django admin</a> — users &amp; advanced settings</p>
     </div>
   </div>
+  <script>
+  (function () {
+    var KEY = "se-desk-theme";
+    var root = document.documentElement;
+
+    function currentTheme() {
+      return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+
+    function applyTheme(theme) {
+      root.setAttribute("data-theme", theme);
+      root.style.colorScheme = theme;
+      try { localStorage.setItem(KEY, theme); } catch (e) {}
+      var btn = document.getElementById("se-theme-btn");
+      if (btn) {
+        btn.setAttribute(
+          "aria-label",
+          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+        );
+      }
+      window.dispatchEvent(new CustomEvent("se-theme-change", { detail: { theme: theme } }));
+    }
+
+    function bindThemeToggle() {
+      var btn = document.getElementById("se-theme-btn");
+      if (!btn || btn.dataset.seThemeBound) return;
+      btn.dataset.seThemeBound = "1";
+      btn.setAttribute(
+        "aria-label",
+        currentTheme() === "dark" ? "Switch to light mode" : "Switch to dark mode"
+      );
+      btn.addEventListener("click", function () {
+        applyTheme(currentTheme() === "dark" ? "light" : "dark");
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindThemeToggle);
+    } else {
+      bindThemeToggle();
+    }
+
+    window.seDeskSetTheme = applyTheme;
+  })();
+  </script>
+  <script src="{% static 'desk/desk.js' %}?v=2" defer></script>
 </body>
 </html>

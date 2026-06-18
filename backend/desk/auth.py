@@ -18,7 +18,12 @@ class DeskAuthenticationForm(AuthenticationForm):
     password = forms.CharField(
         label="Password",
         strip=False,
-        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "current-password",
+                "placeholder": "Enter your password",
+            }
+        ),
     )
 
     error_messages = {

@@ -40,6 +40,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "config.middleware.AdminAccessMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -114,11 +115,15 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Export desk dashboard (/desk/) — Django admin stays at /admin/
 LOGIN_URL = "/desk/login/"
 LOGIN_REDIRECT_URL = "/desk/"
+LOGOUT_REDIRECT_URL = "/desk/login/"
 DESK_BASE_URL = os.environ.get("DESK_BASE_URL", "http://127.0.0.1:8000/desk/")
 ADMIN_BASE_URL = os.environ.get("ADMIN_BASE_URL", "http://127.0.0.1:8000/admin/")
 
@@ -169,10 +174,29 @@ else:
 # Company Branding Settings
 COMPANY_NAME = os.environ.get("COMPANY_NAME", "Sundaram Export")
 COMPANY_NAME_INIT = " ".join([word[0].upper() for word in COMPANY_NAME.split()])
-COMPANY_LOGO = os.environ.get("COMPANY_LOGO", "config/images/company_logo.svg")
-COMPANY_LOGO_TRANSPARENT = os.environ.get("COMPANY_LOGO_TRANSPARENT", "config/images/company_logo.svg")
+INVOICE_NUMBER_PREFIX = os.environ.get("INVOICE_NUMBER_PREFIX", "").strip().upper()
+COMPANY_LOGO = os.environ.get("COMPANY_LOGO", "config/images/company_logo.png")
+COMPANY_LOGO_TRANSPARENT = os.environ.get("COMPANY_LOGO_TRANSPARENT", "config/images/company_logo.png")
 COMPANY_CONTACT = os.environ.get('COMPANY_CONTACT', '8000000000')
 COMPANY_EMAIL = os.environ.get('COMPANY_EMAIL', 'test@gmail.com')
+COMPANY_TAGLINE = os.environ.get(
+    "COMPANY_TAGLINE",
+    "Export of agro commodities, spices & trade goods from India",
+)
+COMPANY_GSTIN = os.environ.get("COMPANY_GSTIN", "")
+_invoice_qr_env = os.environ.get("INVOICE_QR_ENABLED", "").strip().lower()
+if _invoice_qr_env in ("0", "false", "no", "off"):
+    INVOICE_QR_ENABLED = False
+elif _invoice_qr_env in ("1", "true", "yes", "on"):
+    INVOICE_QR_ENABLED = True
+else:
+    INVOICE_QR_ENABLED = bool(COMPANY_GSTIN)
+COMPANY_ADDRESS = os.environ.get("COMPANY_ADDRESS", "")
+COMPANY_WEBSITE = os.environ.get("COMPANY_WEBSITE", "")
+COMPANY_BANK_NAME = os.environ.get("COMPANY_BANK_NAME", "")
+COMPANY_BANK_BRANCH = os.environ.get("COMPANY_BANK_BRANCH", "")
+COMPANY_BANK_ACCOUNT = os.environ.get("COMPANY_BANK_ACCOUNT", "")
+COMPANY_BANK_SWIFT = os.environ.get("COMPANY_BANK_SWIFT", "")
 
 # Optional: Full path for easier use
 COMPANY_LOGO_URL = COMPANY_LOGO

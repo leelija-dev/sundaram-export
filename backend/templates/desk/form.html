@@ -1,23 +1,17 @@
 {% extends "desk/base.html" %}
 {% block content %}
-<div class="se-toolbar">
-  <a href="javascript:history.back()" class="se-btn se-btn-secondary">← Back</a>
+<div class="se-form-page">
+  {% block form_intro %}{% endblock %}
+  <form method="post" class="se-form"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+    <div class="se-card se-card-pad">
+      {% csrf_token %}
+      <div class="se-form-fields">
+      {% for field in form %}
+      {% include "desk/includes/form_field.html" %}
+      {% endfor %}
+      </div>
+      {% include "desk/includes/form_actions.html" with show_cancel=True %}
+    </div>
+  </form>
 </div>
-<form method="post" class="se-form">
-  <div class="se-card se-card-pad">
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="se-field">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
-      {{ field.errors }}
-    </div>
-    {% endfor %}
-    <div class="se-form-actions">
-      <button type="submit" class="se-btn se-btn-primary">Save</button>
-      <a href="javascript:history.back()" class="se-btn se-btn-secondary">Cancel</a>
-    </div>
-  </div>
-</form>
 {% endblock %}

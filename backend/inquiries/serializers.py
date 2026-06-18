@@ -22,6 +22,21 @@ class InquiryCreateSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs.get("website"):
             raise serializers.ValidationError("Spam detected.")
+
+        for field in ("origin", "destination", "company", "phone", "incoterms", "volume"):
+            if field in attrs and isinstance(attrs[field], str):
+                attrs[field] = attrs[field].strip()
+
+        product_slug = (attrs.get("product_slug") or "").strip()
+        if product_slug in ("", "other"):
+            attrs["product_slug"] = ""
+        else:
+            attrs["product_slug"] = product_slug
+            if not Product.objects.filter(slug=product_slug, is_published=True).exists():
+                raise serializers.ValidationError(
+                    {"product_slug": "Unknown or unpublished product."}
+                )
+
         inquiry_type = attrs.get("type")
         if inquiry_type == Inquiry.InquiryType.QUOTE:
             if not attrs.get("origin") or not attrs.get("destination"):
@@ -35,13 +50,8 @@ class InquiryCreateSerializer(serializers.Serializer):
 
         product = None
         product_slug = validated_data.pop("product_slug", "") or ""
-
         if product_slug:
             product = Product.objects.filter(slug=product_slug, is_published=True).first()
-            if product is None:
-                raise serializers.ValidationError(
-                    {"product_slug": "Unknown or unpublished product."}
-                )
 
         inquiry = Inquiry.objects.create(
             inquiry_type=validated_data["type"],

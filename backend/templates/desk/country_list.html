@@ -1,15 +1,21 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}
-<a href="{% url 'desk:country_add' %}" class="se-btn se-btn-primary">+ Add country</a>
-<a href="{% url 'desk:market_list' %}" class="se-btn se-btn-secondary">Regions</a>
-{% endblock %}
 {% block content %}
-<p class="se-muted" style="margin-bottom:1rem">Manage each destination you export to — e.g. Bangladesh, Dubai, USA. Assign an optional region for grouping on the website.</p>
+<div class="se-page-header">
+  <div class="se-page-header-main">
+    <p class="se-muted se-page-intro">Manage each destination you export to — e.g. Bangladesh, Nepal, Bhutan. Assign an optional region such as South Asia for grouping on the website.</p>
+    <p class="se-muted se-sort-hint">Drag rows using the <span class="se-drag-handle se-drag-handle-inline" aria-hidden="true"></span> handle to set website display order.</p>
+  </div>
+  <div class="se-page-actions">
+    <a href="{% url 'desk:country_add' %}" class="se-btn se-btn-primary">+ Add country</a>
+    <a href="{% url 'desk:market_list' %}" class="se-btn se-btn-secondary">Regions</a>
+  </div>
+</div>
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">
       <thead>
         <tr>
+          {% if reorder_kind %}<th class="se-drag-col" aria-label="Reorder"></th>{% endif %}
           <th>Country / destination</th>
           <th>Region</th>
           <th>Key ports</th>
@@ -17,9 +23,14 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody{% if reorder_kind %} class="se-sortable-tbody" data-reorder-kind="{{ reorder_kind }}" data-reorder-url="{% url 'desk:reorder' reorder_kind %}"{% endif %}>
         {% for item in items %}
-        <tr>
+        <tr{% if reorder_kind %} data-id="{{ item.pk }}"{% endif %}>
+          {% if reorder_kind %}
+          <td class="se-drag-cell" data-label="">
+            <span class="se-drag-handle" title="Drag to reorder" aria-label="Drag to reorder"></span>
+          </td>
+          {% endif %}
           <td data-label="Destination">
             <strong>{{ item.name }}</strong>
             {% if item.subtitle %}<br><small>{{ item.subtitle }}</small>{% endif %}
@@ -37,9 +48,9 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="5" class="se-empty">
+          <td colspan="{% if reorder_kind %}6{% else %}5{% endif %}" class="se-empty">
             No export countries yet.
-            <a href="{% url 'desk:country_add' %}">Add Bangladesh, Dubai, or other destinations</a>
+            <a href="{% url 'desk:country_add' %}">Add Bangladesh or other South Asia destinations</a>
           </td>
         </tr>
         {% endfor %}
@@ -48,3 +59,4 @@
   </div>
 </div>
 {% endblock %}
+{% block extra_js %}{% include "desk/includes/sortable_scripts.html" %}{% endblock %}

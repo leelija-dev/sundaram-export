@@ -1,6 +1,8 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}<a href="{% url 'desk:currency_add' %}" class="se-btn se-btn-primary">+ Add currency</a>{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  <a href="{% url 'desk:currency_add' %}" class="se-btn se-btn-primary">+ Add currency</a>
+</div>
 <div class="se-card">
   <div class="se-table-wrap">
     <table class="se-table se-table-cards">

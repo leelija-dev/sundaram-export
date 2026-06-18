@@ -2,9 +2,10 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import ExportCountry, MarketRegion, Office, Product
+from .models import ExportCountry, Industry, MarketRegion, Office, Product
 from .serializers import (
     ExportCountrySerializer,
+    IndustrySerializer,
     MarketRegionSerializer,
     OfficeSerializer,
     ProductDetailSerializer,
@@ -81,6 +82,13 @@ class OfficeDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Office.objects.filter(is_published=True).order_by("sort_order", "region")
+
+
+class IndustryListView(generics.ListAPIView):
+    serializer_class = IndustrySerializer
+
+    def get_queryset(self):
+        return Industry.objects.filter(is_published=True).order_by("sort_order", "name")
 
 
 class HealthView(APIView):

@@ -1,46 +1,27 @@
-{% load desk_extras %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Invoice {{ invoice.invoice_number }}</title>
-  <style>
-    body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 20px; color: #111; }
-    h1 { color: #0a2540; margin: 0; }
-    table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    th, td { border-bottom: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #f5f5f5; }
-    .totals { text-align: right; margin-top: 20px; }
-    .brand { color: #0a2540; font-weight: bold; font-size: 1.2rem; }
-    @media print { body { margin: 0; } button { display: none; } }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice {{ invoice.invoice_number }} | {{ setting.COMPANY_NAME }}</title>
+  <link rel="stylesheet" href="{% static 'desk/invoice.css' %}?v=11">
 </head>
-<body>
-  <button onclick="window.print()" style="margin-bottom:20px; padding:8px 16px; cursor:pointer">Print</button>
-  <p class="brand">{{ setting.COMPANY_NAME }}</p>
-  <h1>INVOICE {{ invoice.invoice_number }}</h1>
-  <p>Issue date: {{ invoice.issue_date|date:"F j, Y" }}{% if invoice.due_date %} · Due: {{ invoice.due_date|date:"F j, Y" }}{% endif %}</p>
-  <p><strong>Bill to</strong><br>{{ invoice.client_name }}{% if invoice.client_company %}<br>{{ invoice.client_company }}{% endif %}
-  {% if invoice.client_email %}<br>{{ invoice.client_email }}{% endif %}
-  {% if invoice.client_address %}<br>{{ invoice.client_address }}{% endif %}</p>
-  <table>
-    <thead><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead>
-    <tbody>
-      {% for line in lines %}
-      <tr>
-        <td>{{ line.description }}</td>
-        <td>{{ line.quantity }}</td>
-        <td>{{ invoice|money_symbol }} {{ line.unit_price }}</td>
-        <td>{{ invoice|money_symbol }} {{ line.amount }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="totals">
-    <p>Subtotal: {{ invoice|money_symbol }} {{ invoice.subtotal }}</p>
-    <p>Tax ({{ invoice.tax_rate }}%): {{ invoice|money_symbol }} {{ invoice.tax_amount }}</p>
-    <p><strong>Total: {{ invoice|money_symbol }} {{ invoice.total }}</strong></p>
+<body class="se-invoice-print-body">
+  <div class="se-invoice-print-page">
+    <div class="se-invoice-print-toolbar">
+      <div class="se-invoice-print-toolbar__left">
+        {% if not public_verify %}
+        <a href="{% url 'desk:invoice_detail' invoice.pk %}" class="se-invoice-print-btn se-invoice-print-btn--secondary">← Back to invoice</a>
+        {% endif %}
+      </div>
+      <div class="se-invoice-print-toolbar__right">
+        <button type="button" class="se-invoice-print-btn se-invoice-print-btn--primary" onclick="window.print()">Print invoice</button>
+      </div>
+    </div>
+    <div class="se-invoice-print-shell">
+      {% include "desk/includes/invoice_document.html" with show_status=True invoice_qr=invoice_qr %}
+    </div>
   </div>
-  {% if invoice.notes %}<p><em>{{ invoice.notes }}</em></p>{% endif %}
 </body>
 </html>

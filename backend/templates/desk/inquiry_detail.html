@@ -1,18 +1,18 @@
 {% extends "desk/base.html" %}
-{% block topbar_actions %}
-{% if not object.customer %}
-<form method="post" action="{% url 'desk:inquiry_create_customer' object.pk %}" style="display:inline">{% csrf_token %}
-  <button type="submit" class="se-btn se-btn-secondary">Save as customer</button>
-</form>
-{% else %}
-<a href="{% url 'desk:customer_detail' object.customer.pk %}" class="se-btn se-btn-secondary">View customer</a>
-{% endif %}
-<a href="{% url 'desk:inquiry_invoice' object.pk %}" class="se-btn se-btn-primary">Create invoice</a>
-{% endblock %}
 {% block content %}
+<div class="se-page-toolbar">
+  {% if not object.customer %}
+  <form method="post" action="{% url 'desk:inquiry_create_customer' object.pk %}" class="se-inline-form">{% csrf_token %}
+    <button type="submit" class="se-btn se-btn-secondary">Save as customer</button>
+  </form>
+  {% else %}
+  <a href="{% url 'desk:customer_detail' object.customer.pk %}" class="se-btn se-btn-secondary">View customer</a>
+  {% endif %}
+  <a href="{% url 'desk:inquiry_invoice' object.pk %}" class="se-btn se-btn-primary">Create invoice</a>
+</div>
 <div class="se-grid-2">
   <div class="se-card se-card-pad">
-    <h2 class="se-section-title" style="margin-top:0">Lead details</h2>
+    <h2 class="se-section-title se-heading-block">Lead details</h2>
     <div class="se-detail-list">
       <p><strong>Type</strong> {{ object.get_inquiry_type_display }}</p>
       {% if object.customer %}
@@ -32,17 +32,15 @@
     </div>
   </div>
   <div class="se-card se-card-pad">
-    <h2 class="se-section-title" style="margin-top:0">Update status</h2>
+    <h2 class="se-section-title se-heading-block">Update status</h2>
     <form method="post" class="se-form">
       {% csrf_token %}
+      <div class="se-form-fields se-form-fields-single">
       {% for field in form %}
-      <div class="se-field">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {{ field.errors }}
-      </div>
+      {% include "desk/includes/form_field.html" %}
       {% endfor %}
-      <button type="submit" class="se-btn se-btn-primary">Save status</button>
+      </div>
+      {% include "desk/includes/form_actions.html" with submit_label="Save status" %}
     </form>
   </div>
 </div>

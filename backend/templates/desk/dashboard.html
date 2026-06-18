@@ -1,314 +1,158 @@
 {% extends "desk/base.html" %}
+{% load static %}
 {% block page_heading %}Analytics{% endblock %}
-{% block extra_css %}
-<style>
-  .se-analytics-meta { font-size: 0.8rem; color: var(--se-muted); margin: -0.5rem 0 1.25rem; }
-  .se-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-  @media (min-width: 640px) { .se-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 1100px) { .se-kpi-grid { grid-template-columns: repeat(6, 1fr); } }
-  .se-kpi {
-    background: var(--se-surface);
-    border: 1px solid var(--se-border);
-    border-radius: var(--se-radius);
-    padding: 1rem;
-    box-shadow: var(--se-shadow);
-  }
-  .se-kpi-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--se-muted); }
-  .se-kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--se-primary); margin: 0.2rem 0; }
-  .se-kpi-delta { font-size: 0.75rem; font-weight: 600; }
-  .se-kpi-delta.up { color: #059669; }
-  .se-kpi-delta.down { color: #dc2626; }
-  .se-kpi-delta.flat { color: var(--se-muted); }
-  .se-chart-grid {
-    display: grid;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-  @media (min-width: 900px) {
-    .se-chart-grid { grid-template-columns: 1.5fr 1fr; }
-    .se-chart-grid.se-chart-grid-3 { grid-template-columns: repeat(3, 1fr); }
-  }
-  .se-chart-card { min-height: 280px; }
-  .se-chart-wrap { position: relative; height: 220px; padding: 0.5rem 1rem 1rem; }
-  .se-chart-wrap.tall { height: 260px; }
-  .se-insight-list { list-style: none; margin: 0; padding: 1rem 1.25rem; }
-  .se-insight-list li {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0.65rem 0; border-bottom: 1px solid var(--se-border); font-size: 0.875rem;
-  }
-  .se-insight-list li:last-child { border-bottom: none; }
-  .se-insight-list strong { color: var(--se-primary); }
-</style>
-{% endblock %}
-{% block topbar_actions %}
-<a href="{% url 'desk:report_add' %}" class="se-btn se-btn-secondary">Export report</a>
-<a href="{% url 'desk:inquiry_list' %}?status=new" class="se-btn se-btn-primary">Review leads</a>
-{% endblock %}
+{% block page_subtitle %}<p class="se-topbar-subtitle">Leads and performance overview</p>{% endblock %}
 {% block content %}
-{% if dashboard.inquiries.new > 0 %}
-<div class="se-alert-banner" role="alert">
-  <strong>{{ dashboard.inquiries.new }} new lead{{ dashboard.inquiries.new|pluralize }}</strong> from the website —
-  <a href="{% url 'desk:inquiry_list' %}?status=new">Review now →</a>
-</div>
-{% endif %}
-
-<p class="se-analytics-meta">Live analytics · Updated {{ dashboard.generated_at }}</p>
-
-<section class="se-kpi-grid" aria-label="Key performance indicators">
-  <article class="se-kpi">
-    <div class="se-kpi-label">New leads</div>
-    <div class="se-kpi-value">{{ dashboard.inquiries.new }}</div>
-    <a href="{% url 'desk:inquiry_list' %}?status=new" class="se-stat-link">Open →</a>
-  </article>
-  <article class="se-kpi">
-    <div class="se-kpi-label">This week</div>
-    <div class="se-kpi-value">{{ dashboard.inquiries.last_7_days }}</div>
-    <span class="se-kpi-delta {% if dashboard.inquiries.week_delta > 0 %}up{% elif dashboard.inquiries.week_delta < 0 %}down{% else %}flat{% endif %}">
-      {% if dashboard.inquiries.week_delta > 0 %}+{% endif %}{{ dashboard.inquiries.week_delta }} vs prior week
-    </span>
-  </article>
-  <article class="se-kpi">
-    <div class="se-kpi-label">Win rate</div>
-    <div class="se-kpi-value">{{ dashboard.inquiries.win_rate }}%</div>
-    <span class="se-kpi-delta flat">{{ dashboard.inquiries.won }} won</span>
-  </article>
-  <article class="se-kpi">
-    <div class="se-kpi-label">Active pipeline</div>
-    <div class="se-kpi-value">{{ dashboard.inquiries.active_pipeline }}</div>
-    <span class="se-kpi-delta flat">New + contacted + quoted</span>
-  </article>
-  <article class="se-kpi">
-    <div class="se-kpi-label">Customers</div>
-    <div class="se-kpi-value">{{ dashboard.customers.total }}</div>
-    <span class="se-kpi-delta flat">{{ dashboard.customers.active }} active</span>
-  </article>
-  <article class="se-kpi">
-    <div class="se-kpi-label">Paid invoices</div>
-    <div class="se-kpi-value">{{ dashboard.documents.invoices_paid }}</div>
-    <span class="se-kpi-delta flat">{{ dashboard.documents.paid_total }}</span>
-  </article>
-</section>
-
-<div class="se-chart-grid">
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Inquiries — last 14 days</div>
-    <div class="se-chart-wrap tall"><canvas id="chartTrend" aria-label="Inquiry trend"></canvas></div>
-  </div>
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Lead pipeline</div>
-    <div class="se-chart-wrap"><canvas id="chartPipeline" aria-label="Pipeline"></canvas></div>
-  </div>
-</div>
-
-<div class="se-chart-grid se-chart-grid-3">
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Contact vs quote</div>
-    <div class="se-chart-wrap"><canvas id="chartTypes" aria-label="Inquiry types"></canvas></div>
-  </div>
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Top destinations</div>
-    <div class="se-chart-wrap"><canvas id="chartDestinations" aria-label="Destinations"></canvas></div>
-  </div>
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Customers by status</div>
-    <div class="se-chart-wrap"><canvas id="chartCustomers" aria-label="Customers"></canvas></div>
-  </div>
-</div>
-
-<div class="se-chart-grid">
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Product interest (from leads)</div>
-    <div class="se-chart-wrap"><canvas id="chartProducts" aria-label="Products"></canvas></div>
-  </div>
-  <div class="se-card se-chart-card">
-    <div class="se-card-header se-card-header-light">Invoice status</div>
-    <div class="se-chart-wrap"><canvas id="chartInvoices" aria-label="Invoices"></canvas></div>
-  </div>
-</div>
-
-<div class="se-grid-2">
-  <div class="se-card">
-    <div class="se-card-header se-card-header-light">Operations snapshot</div>
-    <ul class="se-insight-list">
-      <li><span>Total inquiries</span><strong>{{ dashboard.inquiries.total }}</strong></li>
-      <li><span>Contact messages</span><strong>{{ dashboard.inquiries.contacts }}</strong></li>
-      <li><span>Quote requests</span><strong>{{ dashboard.inquiries.quotes }}</strong></li>
-      <li><span>Export countries (live)</span><strong>{{ dashboard.catalog.countries_published }}</strong></li>
-      <li><span>Published products</span><strong>{{ dashboard.catalog.products_published }} / {{ dashboard.catalog.products }}</strong></li>
-      <li><span>Draft invoices</span><strong>{{ dashboard.documents.invoices_draft }}</strong></li>
-    </ul>
-  </div>
-  <div class="se-card">
-    <div class="se-card-header">Latest website leads</div>
-    {% if dashboard.recent_inquiries %}
-    <div class="se-table-wrap">
-      <table class="se-table">
-        <thead><tr><th>Name</th><th>Type</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          {% for item in dashboard.recent_inquiries %}
-          <tr>
-            <td><strong>{{ item.name }}</strong></td>
-            <td>{{ item.get_inquiry_type_display }}</td>
-            <td><span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
-            <td><a href="{% url 'desk:inquiry_detail' item.pk %}">Open</a></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="se-dash-page">
+<div class="se-dash">
+  <form method="get" class="se-dash-filters" aria-label="Dashboard filters">
+    <div class="se-dash-filters-meta">{{ dashboard.inquiries.filtered_total }} result{{ dashboard.inquiries.filtered_total|pluralize }} · Updated {{ dashboard.generated_at }}</div>
+    <div class="se-dash-filters-grid">
+      <div class="se-dash-filter">
+        <label for="dash-period">Period</label>
+        <select name="period" id="dash-period" onchange="this.form.submit()">
+          <option value="7d" {% if dashboard.filters.period == "7d" %}selected{% endif %}>Last 7 days</option>
+          <option value="14d" {% if dashboard.filters.period == "14d" %}selected{% endif %}>Last 14 days</option>
+          <option value="30d" {% if dashboard.filters.period == "30d" %}selected{% endif %}>Last 30 days</option>
+          <option value="90d" {% if dashboard.filters.period == "90d" %}selected{% endif %}>Last 90 days</option>
+          <option value="all" {% if dashboard.filters.period == "all" %}selected{% endif %}>All time</option>
+        </select>
+      </div>
+      <div class="se-dash-filter">
+        <label for="dash-type">Lead type</label>
+        <select name="type" id="dash-type" onchange="this.form.submit()">
+          <option value="" {% if not dashboard.filters.type %}selected{% endif %}>All types</option>
+          <option value="contact" {% if dashboard.filters.type == "contact" %}selected{% endif %}>Contact</option>
+          <option value="quote" {% if dashboard.filters.type == "quote" %}selected{% endif %}>Quote</option>
+        </select>
+      </div>
+      <div class="se-dash-filter">
+        <label for="dash-status">Status</label>
+        <select name="status" id="dash-status" onchange="this.form.submit()">
+          <option value="" {% if not dashboard.filters.status %}selected{% endif %}>All statuses</option>
+          <option value="new" {% if dashboard.filters.status == "new" %}selected{% endif %}>New</option>
+          <option value="contacted" {% if dashboard.filters.status == "contacted" %}selected{% endif %}>Contacted</option>
+          <option value="quoted" {% if dashboard.filters.status == "quoted" %}selected{% endif %}>Quoted</option>
+          <option value="won" {% if dashboard.filters.status == "won" %}selected{% endif %}>Won</option>
+          <option value="lost" {% if dashboard.filters.status == "lost" %}selected{% endif %}>Lost</option>
+        </select>
+      </div>
     </div>
+    <div class="se-dash-filters-actions">
+      {% if dashboard.filters.active_count %}
+      <a href="{% url 'desk:dashboard' %}" class="se-btn se-btn-sm se-btn-secondary">Reset filters</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <section class="se-dash-kpis" aria-label="Key metrics">
+    <article class="se-dash-kpi se-dash-kpi-featured">
+      <span class="se-dash-kpi-label">New inquiries</span>
+      <span class="se-dash-kpi-value">{{ dashboard.inquiries.new }}</span>
+      <a href="{% url 'desk:inquiry_list' %}?status=new" class="se-dash-kpi-link">View new inquiries →</a>
+    </article>
+    <article class="se-dash-kpi">
+      <span class="se-dash-kpi-label">Inquiries this week</span>
+      <span class="se-dash-kpi-value">{{ dashboard.inquiries.last_7_days }}</span>
+      <span class="se-dash-kpi-note {% if dashboard.inquiries.week_delta > 0 %}is-up{% elif dashboard.inquiries.week_delta < 0 %}is-down{% endif %}">
+        {% if dashboard.inquiries.week_delta > 0 %}+{% endif %}{{ dashboard.inquiries.week_delta }} vs prior week
+      </span>
+    </article>
+    <article class="se-dash-kpi">
+      <span class="se-dash-kpi-label">Leads in progress</span>
+      <span class="se-dash-kpi-value">{{ dashboard.inquiries.active_pipeline }}</span>
+      <span class="se-dash-kpi-note">New, contacted and quoted</span>
+    </article>
+    <article class="se-dash-kpi">
+      <span class="se-dash-kpi-label">Success rate</span>
+      <span class="se-dash-kpi-value">{{ dashboard.inquiries.win_rate }}%</span>
+      <span class="se-dash-kpi-note">{{ dashboard.inquiries.won }} converted · {{ dashboard.customers.total }} customers</span>
+    </article>
+  </section>
+
+  <section class="se-dash-charts" aria-label="Charts">
+    <article class="se-dash-panel se-dash-panel-trend">
+      <div class="se-dash-panel-head">
+        <h3>Inquiry trend</h3>
+        <p>{{ dashboard.filters.period_label }}</p>
+      </div>
+      <div class="se-dash-chart-box" id="chartTrendBox">
+        {% if dashboard.has_trend_data %}
+        <canvas id="chartTrend" aria-label="Inquiry trend"></canvas>
+        {% else %}
+        <p class="se-dash-empty">No inquiries for the selected filters.</p>
+        {% endif %}
+      </div>
+    </article>
+
+    <article class="se-dash-panel se-dash-panel-pipeline">
+      <div class="se-dash-panel-head">
+        <h3>Lead status overview</h3>
+        <p>{{ dashboard.inquiries.pipeline_total }} total lead{{ dashboard.inquiries.pipeline_total|pluralize }}</p>
+      </div>
+      <div class="se-dash-chart-box se-dash-chart-box-pie" id="chartPipelineBox">
+        {% if dashboard.has_pipeline_data %}
+        <canvas id="chartPipeline" aria-label="Pipeline"></canvas>
+        <div class="se-dash-pie-center" id="chartPipelineCenter" aria-hidden="true">
+          <strong>{{ dashboard.inquiries.pipeline_total }}</strong>
+          <span>leads</span>
+        </div>
+        {% else %}
+        <p class="se-dash-empty">Pipeline chart will appear when leads are added.</p>
+        {% endif %}
+      </div>
+    </article>
+  </section>
+
+  {% if dashboard.has_destinations %}
+  <article class="se-dash-panel se-dash-panel-wide">
+    <div class="se-dash-panel-head">
+      <h3>Top requested destinations</h3>
+      <p>Most common routes requested by inquiries</p>
+    </div>
+    <div class="se-dash-chart-box se-dash-chart-box-dest" id="chartDestinationsBox">
+      <canvas id="chartDestinations" aria-label="Top export destinations"></canvas>
+    </div>
+  </article>
+  {% endif %}
+
+  <article class="se-dash-panel">
+    <div class="se-dash-panel-head se-dash-panel-head-row">
+      <div>
+        <h3>Recent inquiries</h3>
+        <p>Latest submissions from website forms</p>
+      </div>
+      <a href="{% url 'desk:inquiry_list' %}" class="se-btn se-btn-sm se-btn-secondary">View all</a>
+    </div>
+    {% if dashboard.recent_inquiries %}
+    <ul class="se-lead-list">
+      {% for item in dashboard.recent_inquiries %}
+      <li>
+        <a href="{% url 'desk:inquiry_detail' item.pk %}" class="se-lead-item">
+          <span class="se-lead-avatar" aria-hidden="true">{{ item.name|slice:":1"|upper }}</span>
+          <span class="se-lead-main">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.get_inquiry_type_display }}{% if item.destination %} · {{ item.destination }}{% endif %}</span>
+          </span>
+          <span class="se-lead-meta">
+            <span class="se-badge se-badge-{{ item.status }}">{{ item.get_status_display }}</span>
+            <time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:"M j, Y" }}</time>
+          </span>
+          <span class="se-lead-arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
     {% else %}
-    <p class="se-empty">No inquiries yet.</p>
+    <p class="se-dash-empty se-dash-empty-pad">No leads match the selected filters.</p>
     {% endif %}
-  </div>
+  </article>
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
-(function () {
-  const data = {{ dashboard.charts_json|safe }};
-  const brand = {
-    primary: "#0a2540",
-    secondary: "#2563eb",
-    accent: "#f59e0b",
-    muted: "#94a3b8",
-    success: "#059669",
-    purple: "#7c3aed",
-  };
-  const font = { family: "system-ui, sans-serif", size: 11 };
-  Chart.defaults.font = font;
-  Chart.defaults.color = "#64748b";
-
-  const common = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { labels: { boxWidth: 12, padding: 14 } } },
-  };
-
-  new Chart(document.getElementById("chartTrend"), {
-    type: "line",
-    data: {
-      labels: data.trend_labels,
-      datasets: [{
-        label: "Inquiries",
-        data: data.trend_counts,
-        borderColor: brand.secondary,
-        backgroundColor: "rgba(37, 99, 235, 0.12)",
-        fill: true,
-        tension: 0.35,
-        pointRadius: 3,
-        pointBackgroundColor: brand.secondary,
-      }],
-    },
-    options: {
-      ...common,
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } },
-      },
-    },
-  });
-
-  new Chart(document.getElementById("chartPipeline"), {
-    type: "doughnut",
-    data: {
-      labels: data.pipeline_labels,
-      datasets: [{
-        data: data.pipeline_counts,
-        backgroundColor: [brand.primary, brand.secondary, brand.purple, brand.success, brand.muted],
-        borderWidth: 0,
-      }],
-    },
-    options: { ...common, cutout: "58%" },
-  });
-
-  new Chart(document.getElementById("chartTypes"), {
-    type: "bar",
-    data: {
-      labels: data.type_labels,
-      datasets: [{
-        data: data.type_counts,
-        backgroundColor: [brand.secondary, brand.accent],
-        borderRadius: 6,
-      }],
-    },
-    options: {
-      ...common,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } },
-    },
-  });
-
-  new Chart(document.getElementById("chartDestinations"), {
-    type: "bar",
-    data: {
-      labels: data.destination_labels,
-      datasets: [{
-        data: data.destination_counts,
-        backgroundColor: brand.primary,
-        borderRadius: 6,
-      }],
-    },
-    options: {
-      indexAxis: "y",
-      ...common,
-      plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
-    },
-  });
-
-  new Chart(document.getElementById("chartCustomers"), {
-    type: "pie",
-    data: {
-      labels: data.customer_labels,
-      datasets: [{
-        data: data.customer_counts,
-        backgroundColor: [brand.accent, brand.success, brand.muted],
-      }],
-    },
-    options: common,
-  });
-
-  new Chart(document.getElementById("chartProducts"), {
-    type: "bar",
-    data: {
-      labels: data.product_labels,
-      datasets: [{
-        data: data.product_counts,
-        backgroundColor: brand.secondary,
-        borderRadius: 6,
-      }],
-    },
-    options: {
-      indexAxis: "y",
-      ...common,
-      plugins: { legend: { display: false } },
-      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
-    },
-  });
-
-  new Chart(document.getElementById("chartInvoices"), {
-    type: "bar",
-    data: {
-      labels: data.invoice_labels,
-      datasets: [{
-        data: data.invoice_counts,
-        backgroundColor: [brand.muted, brand.secondary, brand.success, "#dc2626"],
-        borderRadius: 6,
-      }],
-    },
-    options: {
-      ...common,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } },
-    },
-  });
-})();
-</script>
+<script>window.seDashboardCharts = {{ dashboard.charts_json|safe }};</script>
+<script src="{% static 'desk/dashboard.js' %}" defer></script>
 {% endblock %}

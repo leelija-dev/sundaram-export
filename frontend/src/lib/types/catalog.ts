@@ -7,6 +7,13 @@ export type ProductCategory =
   | "handicrafts"
   | (string & {});
 
+export type IndustrySector = {
+  slug: string;
+  name: string;
+  description: string;
+  complianceTag?: string;
+};
+
 export type ExportProduct = {
   slug: string;
   title: string;
@@ -18,6 +25,8 @@ export type ExportProduct = {
   markets: string[];
   specifications: string[];
   packaging: string[];
+  imageUrl?: string;
+  createdAt?: string;
 };
 
 export const PRODUCT_CATEGORY_LABELS: Record<string, string> = {

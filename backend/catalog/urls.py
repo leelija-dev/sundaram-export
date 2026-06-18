@@ -6,6 +6,7 @@ from .views import (
     ExportCountryDetailView,
     ExportCountryListView,
     HealthView,
+    IndustryListView,
     MarketDetailView,
     MarketListView,
     OfficeDetailView,
@@ -25,4 +26,5 @@ urlpatterns = [
     path("markets/<slug:slug>/", MarketDetailView.as_view(), name="market-detail"),
     path("offices/", OfficeListView.as_view(), name="office-list"),
     path("offices/<int:pk>/", OfficeDetailView.as_view(), name="office-detail"),
+    path("industries/", IndustryListView.as_view(), name="industry-list"),
 ]

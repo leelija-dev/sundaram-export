@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
-import { submitInquiry } from "@/lib/api";
+import { clientSubmitInquiry } from "@/lib/api-client";
 import { clientFetchCountries, clientFetchProducts } from "@/lib/api-client";
 import type { ExportCountry } from "@/lib/api";
 import type { ExportProduct } from "@/lib/types/catalog";
@@ -53,7 +53,7 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
     const data = new FormData(form);
 
     try {
-      await submitInquiry({
+      await clientSubmitInquiry({
         type: variant,
         name: String(data.get("name") ?? ""),
         company: String(data.get("company") ?? ""),
@@ -185,7 +185,7 @@ export function ContactForm({ variant = "contact" }: ContactFormProps) {
         <button
           type="submit"
           disabled={submitting || catalogLoading}
-          className="rounded-xl bg-gradient-to-r from-secondary to-secondary/80 px-8 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-secondary/30 disabled:opacity-60"
+          className="rounded-xl bg-gradient-to-r from-accent to-accent-light px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:shadow-xl hover:shadow-accent/30 disabled:opacity-60"
         >
           {submitting ? "Sending..." : variant === "quote" ? "Submit quote request" : "Send message"}
         </button>

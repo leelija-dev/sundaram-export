@@ -1,8 +1,8 @@
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import models
-from django.db.models import Max
+from django.db import models, transaction
+from django.db.utils import IntegrityError
 
 from inquiries.models import Inquiry
 from master.models import Currency
@@ -15,14 +15,21 @@ class Invoice(models.Model):
         PAID = "paid", "Paid"
         CANCELLED = "cancelled", "Cancelled"
 
-    invoice_number = models.CharField(max_length=32, unique=True, editable=False)
+    invoice_number = models.CharField(max_length=40, unique=True, editable=False)
     inquiry = models.ForeignKey(
         Inquiry, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoices"
     )
     client_name = models.CharField(max_length=200)
     client_company = models.CharField(max_length=200, blank=True)
     client_email = models.EmailField(blank=True)
+    client_phone = models.CharField(max_length=64, blank=True)
     client_address = models.TextField(blank=True)
+    client_gstin = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Buyer tax ID (optional)",
+        help_text="Leave blank for export invoices to foreign buyers. Fill only for Indian GSTIN or a foreign VAT/TIN.",
+    )
     issue_date = models.DateField()
     due_date = models.DateField(null=True, blank=True)
     currency = models.ForeignKey(
@@ -35,6 +42,17 @@ class Invoice(models.Model):
     )
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT)
     notes = models.TextField(blank=True)
+    # Export shipping (shown on commercial invoice — editable per invoice)
+    pre_carriage_by = models.CharField(max_length=120, blank=True)
+    place_of_pre_carriage = models.CharField(max_length=200, blank=True)
+    port_of_loading = models.CharField(max_length=200, blank=True)
+    vessel_flight_no = models.CharField(max_length=120, blank=True)
+    port_of_discharge = models.CharField(max_length=200, blank=True)
+    final_destination = models.CharField(max_length=200, blank=True)
+    country_of_origin = models.CharField(max_length=120, blank=True)
+    country_of_final_destination = models.CharField(max_length=120, blank=True)
+    volume_shipment = models.CharField(max_length=200, blank=True)
+    incoterms = models.CharField(max_length=120, blank=True)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0"))
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
     tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
@@ -63,23 +81,17 @@ class Invoice(models.Model):
 
     @classmethod
     def generate_number(cls):
-        from django.utils import timezone
+        from .invoice_numbers import compose_invoice_number
 
-        year = timezone.now().year
-        prefix = f"INV-{year}-"
-        last = (
-            cls.objects.filter(invoice_number__startswith=prefix)
-            .aggregate(Max("invoice_number"))
-            .get("invoice_number__max")
-        )
-        if last:
+        for _ in range(12):
             try:
-                seq = int(last.split("-")[-1]) + 1
-            except ValueError:
-                seq = 1
-        else:
-            seq = 1
-        return f"{prefix}{seq:04d}"
+                with transaction.atomic():
+                    candidate = compose_invoice_number(cls)
+                    if not cls.objects.filter(invoice_number=candidate).exists():
+                        return candidate
+            except IntegrityError:
+                continue
+        raise RuntimeError("Unable to generate a unique invoice number. Please try again.")
 
 
 class InvoiceLine(models.Model):
@@ -102,10 +114,12 @@ class InvoiceLine(models.Model):
 
 class ExportReport(models.Model):
     class ReportType(models.TextChoices):
-        INQUIRIES_SUMMARY = "inquiries_summary", "Inquiries summary"
-        PIPELINE = "pipeline", "Sales pipeline"
-        CATALOG = "catalog", "Catalog overview"
-        LEADS_BY_DESTINATION = "leads_by_destination", "Leads by destination country"
+        EXPORT_SALES = "export_sales", "Export sales & invoices"
+        INQUIRIES_SUMMARY = "inquiries_summary", "Inquiry & lead summary"
+        PIPELINE = "pipeline", "Sales pipeline & conversion"
+        LEADS_BY_DESTINATION = "leads_by_destination", "Leads by export market"
+        CUSTOMER_SUMMARY = "customer_summary", "Customers & buyers"
+        CATALOG = "catalog", "Catalog & markets overview"
 
     title = models.CharField(max_length=200)
     report_type = models.CharField(max_length=32, choices=ReportType.choices)

@@ -1,5 +1,12 @@
 {% extends "desk/form.html" %}
-{% block content %}
-<p class="se-muted" style="margin-bottom:1rem">Choose a report type and optional date range. Results are saved from live inquiry and catalog data.</p>
-{{ block.super }}
+{% block form_intro %}
+<p class="se-muted se-page-intro">Build a professional export business report from live desk data. Pick a type and optional date range — results are saved for future reference.</p>
+<div class="se-report-type-picker">
+  {% for rt in report_types %}
+  <article class="se-report-type-card">
+    <span class="se-report-type-badge se-report-type-badge--{{ rt.value }}">{{ rt.label }}</span>
+    <p class="se-muted">{{ rt.help }}</p>
+  </article>
+  {% endfor %}
+</div>
 {% endblock %}

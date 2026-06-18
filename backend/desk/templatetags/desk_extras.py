@@ -1,5 +1,7 @@
 from django import template
 
+from desk.invoice_words import amount_in_words
+
 register = template.Library()
 
 
@@ -12,6 +14,18 @@ def money_symbol(obj):
     if currency and getattr(currency, "code", None):
         return currency.code
     return "—"
+
+
+@register.filter
+def invoice_amount_words(invoice):
+    code = invoice.currency.code if invoice.currency else "INR"
+    return amount_in_words(invoice.total, code)
+
+
+@register.filter
+def sum_line_qty(lines):
+    total = sum((line.quantity for line in lines), 0)
+    return f"{total:.2f}"
 
 
 @register.filter

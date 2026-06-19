@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { LoadingIndicators } from "@/components/loading-indicators";
+import { RoutePrefetch } from "@/components/route-prefetch";
 import { SiteConfigProvider } from "@/components/site-config-provider";
 import { SmoothScrollProvider } from "@/components/smooth-scroll-provider";
 import { Footer, Header } from "@/components/site-ui";
@@ -35,6 +36,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SiteConfigProvider config={siteConfig}>
+          <RoutePrefetch />
           <LoadingIndicators />
           <SmoothScrollProvider>
             <Header />

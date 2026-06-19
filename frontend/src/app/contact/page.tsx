@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { ContactPageContent } from "@/components/contact-page-content";
+import { ContactPageSkeleton } from "@/components/page-skeletons";
 import { site } from "@/data/site";
 import { fetchOffices } from "@/lib/api";
 
@@ -9,8 +11,15 @@ export const metadata = {
 
 export const revalidate = 60;
 
-export default async function ContactPage() {
+async function ContactPageData() {
   const offices = await fetchOffices();
-
   return <ContactPageContent offices={offices} />;
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<ContactPageSkeleton />}>
+      <ContactPageData />
+    </Suspense>
+  );
 }

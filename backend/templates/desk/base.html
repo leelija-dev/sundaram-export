@@ -35,6 +35,11 @@
             <small>Admin portal</small>
           </span>
         </a>
+        <button type="button" class="se-sidebar-close" id="se-sidebar-close" aria-label="Close menu">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
       <nav class="se-sidebar-nav">
         <span class="se-nav-label">Overview</span>
@@ -222,7 +227,7 @@
     window.seDeskSetTheme = applyTheme;
   })();
   </script>
-  <script src="{% static 'desk/desk.js' %}?v=6" defer></script>
+  <script src="{% static 'desk/desk.js' %}?v=7" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

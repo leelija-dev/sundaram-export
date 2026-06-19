@@ -9,6 +9,7 @@ import { Children, useCallback, useEffect, useRef, useState, type ReactNode } fr
 import { cn } from "@/lib/utils";
 import { navLinks, site, socialLinks } from "@/data/site";
 import { useSiteConfig } from "@/components/site-config-provider";
+import { MobileMenu } from "@/components/mobile-menu";
 import { useLenis } from "@/components/smooth-scroll-provider";
 import {
   Bars3Icon,
@@ -216,6 +217,7 @@ export function Button({
   return (
     <Link
       href={href}
+      prefetch
       className={cn(
         "inline-flex min-h-11 items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors sm:min-h-0",
         fullWidthOnMobile && "w-full sm:w-auto",
@@ -230,7 +232,7 @@ export function Button({
 
 function Logo() {
   return (
-    <Link href="/" className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
+    <Link href="/" prefetch className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
       <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-primary-dark/50 text-xs font-bold text-white backdrop-blur-md lg:h-10 lg:w-10 lg:text-sm">
         SE
         <span
@@ -269,6 +271,7 @@ function NavLink({
     return (
       <Link
         href={href}
+        prefetch
         onClick={onClick}
         className={cn(
           "flex min-h-[3.25rem] items-center gap-3 rounded-lg px-3 text-[15px] font-medium transition-all",
@@ -293,6 +296,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      prefetch
       onClick={onClick}
       className={cn(
         "rounded-md px-3 py-2 text-[13px] font-medium transition-all xl:text-sm",
@@ -326,6 +330,30 @@ export function Header() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (open) {
+      setNavVisible(true);
+      lenis?.stop();
+    } else {
+      lenis?.start();
+    }
+
+    const root = document.documentElement;
+    if (open) {
+      root.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      root.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      root.style.overflow = "";
+      document.body.style.overflow = "";
+      lenis?.start();
+    };
+  }, [open, lenis, setNavVisible]);
 
   useEffect(() => {
     const TOP_THRESHOLD = 48;
@@ -398,17 +426,11 @@ export function Header() {
     };
   }, [open, setNavVisible, lenis]);
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
   return (
     <>
       <header
         data-visible={visible ? "true" : "false"}
+        data-menu-open={open ? "true" : "false"}
         data-motion={motion}
         className={cn(
           "site-header fixed inset-x-0 top-0 z-50 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]",
@@ -451,6 +473,7 @@ export function Header() {
         <div className="flex shrink-0 items-center justify-end gap-2 lg:gap-3">
           <Link
             href="/quote"
+            prefetch
             className="hidden min-h-9 items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white shadow-md shadow-accent/30 transition-all hover:bg-accent/90 lg:inline-flex"
           >
             Request quote
@@ -469,102 +492,16 @@ export function Header() {
         </div>
       </Container>
       </div>
-
-      {open && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-primary-dark/70 backdrop-blur-sm lg:hidden"
-          aria-label="Close menu"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <div
-        id="mobile-menu"
-        className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-[min(100vw,20rem)] flex-col border-l border-border bg-background shadow-2xl transition-transform duration-300 ease-out supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)] lg:hidden",
-          open ? "translate-x-0" : "pointer-events-none translate-x-full"
-        )}
-        aria-hidden={!open}
-      >
-        <div className="flex h-[3.75rem] items-center justify-between border-b border-white/10 bg-primary-dark px-4 sm:h-16">
-          <span className="text-sm font-semibold text-white">Menu</span>
-          <button
-            type="button"
-            className="touch-target inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 text-white/90"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-4" aria-label="Mobile">
-          <ul className="space-y-1">
-            {navLinks.map((link) => {
-              const active =
-                pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
-              return (
-                <li key={link.href}>
-                  <NavLink
-                    href={link.href}
-                    label={link.label}
-                    active={active}
-                    mobile
-                    onClick={() => setOpen(false)}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="mt-6 space-y-2.5 border-t border-border pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <a
-              href={phoneHref(phone)}
-              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3 text-sm transition-colors hover:border-secondary/30"
-              onClick={() => setOpen(false)}
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-white">
-                <PhoneIcon className="h-4 w-4" aria-hidden />
-              </span>
-              <div>
-                <p className="text-xs text-muted">Trade desk</p>
-                <p className="font-medium text-primary">{phone}</p>
-              </div>
-            </a>
-            <a
-              href={`mailto:${email}`}
-              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3 text-sm transition-colors hover:border-secondary/30"
-              onClick={() => setOpen(false)}
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-white">
-                <EnvelopeIcon className="h-4 w-4" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs text-muted">Email</p>
-                <p className="truncate font-medium text-primary">{email}</p>
-              </div>
-            </a>
-            <div className="flex items-start gap-3 rounded-lg border border-border bg-surface px-3 py-3 text-sm">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-white">
-                <MapPinIcon className="h-4 w-4" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs text-muted">Head office</p>
-                <p className="font-medium leading-snug text-primary">{address}</p>
-              </div>
-            </div>
-            <Link
-              href="/quote"
-              className="flex min-h-11 items-center justify-center rounded-md bg-accent text-base font-semibold text-white shadow-md shadow-accent/25 transition-colors hover:bg-accent/90"
-              onClick={() => setOpen(false)}
-            >
-              Request a quote
-            </Link>
-          </div>
-        </nav>
-      </div>
     </header>
+
+      <MobileMenu
+        open={open}
+        onClose={() => setOpen(false)}
+        pathname={pathname}
+        phone={phone}
+        email={email}
+        address={address}
+      />
 
       <div className="site-header-spacer" aria-hidden />
     </>
@@ -627,6 +564,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch
                     className="inline-flex min-h-10 items-center transition-colors hover:text-accent sm:min-h-0"
                   >
                     {link.label}
@@ -646,6 +584,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch
                     className="inline-flex min-h-10 items-center transition-colors hover:text-accent sm:min-h-0"
                   >
                     {link.label}

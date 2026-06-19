@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { MarketsPageContent } from "@/components/markets-page-content";
+import { MarketsPageSkeleton } from "@/components/page-skeletons";
 import { fetchExportCountries, fetchMarketRegions } from "@/lib/api";
 import { site } from "@/data/site";
 
@@ -9,11 +11,19 @@ export const metadata = {
   description: `Export destinations served by ${site.name} — compliance, ports, and buyer networks worldwide.`,
 };
 
-export default async function MarketsPage() {
+async function MarketsPageData() {
   const [countries, regions] = await Promise.all([
     fetchExportCountries(),
     fetchMarketRegions(),
   ]);
 
   return <MarketsPageContent countries={countries} regions={regions} />;
+}
+
+export default function MarketsPage() {
+  return (
+    <Suspense fallback={<MarketsPageSkeleton />}>
+      <MarketsPageData />
+    </Suspense>
+  );
 }

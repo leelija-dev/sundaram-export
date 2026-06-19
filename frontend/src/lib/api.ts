@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import type { ExportProduct, IndustrySector, MarketRegionCard, ProductCategory } from "@/lib/types/catalog";
 import { resolveMediaUrl } from "@/lib/media-url";
 
@@ -15,6 +17,10 @@ const API_BASE =
 export const API_REVALIDATE_SECONDS = 60;
 
 type Paginated<T> = { results: T[]; count?: number } | T[];
+
+type MemoryCacheEntry = { expires: number; data: unknown };
+const memoryCache = new Map<string, MemoryCacheEntry>();
+const DEV_MEMORY_TTL_MS = 30_000;
 
 export function unwrapList<T>(data: Paginated<T>): T[] {
   if (Array.isArray(data)) return data;
@@ -137,53 +143,92 @@ export function mapMarketRegion(api: ApiMarketRegion): MarketRegionCard {
   };
 }
 
-async function serverGet<T>(path: string, revalidate = API_REVALIDATE_SECONDS): Promise<T | null> {
+function readMemoryCache<T>(key: string): T | null {
+  const hit = memoryCache.get(key);
+  if (!hit || hit.expires <= Date.now()) return null;
+  return hit.data as T;
+}
+
+function writeMemoryCache(key: string, data: unknown, ttlMs: number) {
+  memoryCache.set(key, { expires: Date.now() + ttlMs, data });
+}
+
+async function fetchJson<T>(path: string): Promise<T | null> {
+  const memoryKey = `GET:${path}`;
+  const cached = readMemoryCache<T>(memoryKey);
+  if (cached !== null) return cached;
+
   try {
-    const res = await fetch(`${API_BASE}${path}`, { next: { revalidate } });
+    const res = await fetch(`${API_BASE}${path}`, {
+      next: { revalidate: API_REVALIDATE_SECONDS, tags: [`api:${path}`] },
+    });
     if (!res.ok) return null;
-    return (await res.json()) as T;
+    const data = (await res.json()) as T;
+    writeMemoryCache(memoryKey, data, DEV_MEMORY_TTL_MS);
+    return data;
   } catch {
     return null;
   }
 }
 
-export async function fetchIndustries(): Promise<IndustrySector[]> {
-  const data = await serverGet<Paginated<ApiIndustry>>("/industries/");
-  if (!data) return [];
-  return unwrapList(data).map(mapIndustry);
+const fetchJsonDeduped = cache(fetchJson);
+
+function catalogCache<T>(key: string, tags: string[], loader: () => Promise<T>): Promise<T> {
+  return unstable_cache(loader, ["catalog", key], {
+    revalidate: API_REVALIDATE_SECONDS,
+    tags,
+  })();
 }
 
-export async function fetchProducts(): Promise<ExportProduct[]> {
-  const data = await serverGet<Paginated<ApiProduct>>("/products/");
-  if (!data) return [];
-  return unwrapList(data).map(mapProduct);
-}
+export const fetchIndustries = cache(async (): Promise<IndustrySector[]> => {
+  return catalogCache("industries", ["catalog", "industries"], async () => {
+    const data = await fetchJsonDeduped<Paginated<ApiIndustry>>("/industries/");
+    if (!data) return [];
+    return unwrapList(data).map(mapIndustry);
+  });
+});
 
-export async function fetchProductBySlug(slug: string): Promise<ExportProduct | null> {
-  const data = await serverGet<ApiProduct>(`/products/${slug}/`);
-  return data ? mapProduct(data) : null;
-}
+export const fetchProducts = cache(async (): Promise<ExportProduct[]> => {
+  return catalogCache("products", ["catalog", "products"], async () => {
+    const data = await fetchJsonDeduped<Paginated<ApiProduct>>("/products/");
+    if (!data) return [];
+    return unwrapList(data).map(mapProduct);
+  });
+});
 
-export async function fetchExportCountries(): Promise<ExportCountry[]> {
-  const data = await serverGet<Paginated<ExportCountry>>("/countries/");
-  if (!data) return [];
-  return unwrapList(data);
-}
+export const fetchProductBySlug = cache(async (slug: string): Promise<ExportProduct | null> => {
+  return catalogCache(`product:${slug}`, ["catalog", "products", `product:${slug}`], async () => {
+    const data = await fetchJsonDeduped<ApiProduct>(`/products/${slug}/`);
+    return data ? mapProduct(data) : null;
+  });
+});
 
-export async function fetchMarketRegions(): Promise<MarketRegionCard[]> {
-  const data = await serverGet<Paginated<ApiMarketRegion>>("/markets/");
-  if (!data) return [];
-  return unwrapList(data).map(mapMarketRegion);
-}
+export const fetchExportCountries = cache(async (): Promise<ExportCountry[]> => {
+  return catalogCache("countries", ["catalog", "countries"], async () => {
+    const data = await fetchJsonDeduped<Paginated<ExportCountry>>("/countries/");
+    if (!data) return [];
+    return unwrapList(data);
+  });
+});
 
-export async function fetchOffices(): Promise<Office[]> {
-  const data = await serverGet<Paginated<Office>>("/offices/");
-  if (!data) return [];
-  return unwrapList(data);
-}
+export const fetchMarketRegions = cache(async (): Promise<MarketRegionCard[]> => {
+  return catalogCache("markets", ["catalog", "markets"], async () => {
+    const data = await fetchJsonDeduped<Paginated<ApiMarketRegion>>("/markets/");
+    if (!data) return [];
+    return unwrapList(data).map(mapMarketRegion);
+  });
+});
+
+export const fetchOffices = cache(async (): Promise<Office[]> => {
+  return catalogCache("offices", ["catalog", "offices"], async () => {
+    const data = await fetchJsonDeduped<Paginated<Office>>("/offices/");
+    if (!data) return [];
+    return unwrapList(data);
+  });
+});
 
 export async function checkApiHealth(): Promise<boolean> {
-  const data = await serverGet<{ status: string }>("/health/", 30);
+  const data = await fetchJsonDeduped<{ status: string }>("/health/");
   return data?.status === "ok";
 }
 

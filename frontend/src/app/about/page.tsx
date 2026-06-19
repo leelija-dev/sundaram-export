@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { AboutPageContent } from "@/components/about-page-content";
+import { AboutPageSkeleton } from "@/components/page-skeletons";
 import {
   fetchExportCountries,
   fetchIndustries,
@@ -14,7 +16,7 @@ export const metadata = {
   description: `Learn about ${site.name} — export operations, sector expertise, and global trade desks.`,
 };
 
-export default async function AboutPage() {
+async function AboutPageData() {
   const [offices, industries, products, countries] = await Promise.all([
     fetchOffices(),
     fetchIndustries(),
@@ -35,5 +37,13 @@ export default async function AboutPage() {
       products={products}
       exportCorridorCount={exportCorridorCount}
     />
+  );
+}
+
+export default function AboutPage() {
+  return (
+    <Suspense fallback={<AboutPageSkeleton />}>
+      <AboutPageData />
+    </Suspense>
   );
 }

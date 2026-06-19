@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ProductDetailHero } from "@/components/product-detail-hero";
 import { ProductImage } from "@/components/product-image";
+import { ProductDetailSkeleton } from "@/components/page-skeletons";
 import {
   Container,
   DetailLayout,
@@ -32,8 +34,7 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function ProductDetailPage({ params }: Props) {
-  const { slug } = await params;
+async function ProductDetailData({ slug }: { slug: string }) {
   const product = await fetchProductBySlug(slug);
   if (!product) notFound();
 
@@ -128,11 +129,20 @@ export default async function ProductDetailPage({ params }: Props) {
                   </div>
                 </div>
               )}
-
             </div>
           </DetailLayout>
         </Container>
       </PageSection>
     </>
+  );
+}
+
+export default async function ProductDetailPage({ params }: Props) {
+  const { slug } = await params;
+
+  return (
+    <Suspense fallback={<ProductDetailSkeleton />}>
+      <ProductDetailData slug={slug} />
+    </Suspense>
   );
 }

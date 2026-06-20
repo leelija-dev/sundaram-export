@@ -11,8 +11,18 @@ export type {
 } from "@/lib/types/catalog";
 export { categoryLabelsFromProducts, PRODUCT_CATEGORY_LABELS } from "@/lib/types/catalog";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000/api/v1";
+function resolveApiBase(): string {
+  if (typeof window === "undefined") {
+    const internal = process.env.API_INTERNAL_URL?.replace(/\/$/, "");
+    if (internal) return internal;
+  }
+
+  return (
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000/api/v1"
+  );
+}
+
+const API_BASE = resolveApiBase();
 
 export const API_REVALIDATE_SECONDS = 60;
 

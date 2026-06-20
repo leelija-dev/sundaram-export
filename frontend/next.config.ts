@@ -41,6 +41,7 @@ function buildMediaRemotePatterns() {
 }
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: false,
   images: {
     remotePatterns: buildMediaRemotePatterns(),

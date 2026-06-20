@@ -41,6 +41,18 @@ python manage.py runserver
 
 API: [http://127.0.0.1:8000/api/v1/health/](http://127.0.0.1:8000/api/v1/health/)
 
+## Docker deployment
+
+For production-style deployment with PostgreSQL, nginx, and all services:
+
+```powershell
+copy .env.docker.example .env.docker
+docker compose --env-file .env.docker up --build -d
+docker compose --env-file .env.docker exec backend python manage.py createsuperuser
+```
+
+See **[docs/DOCKER.md](docs/DOCKER.md)** for full configuration, architecture, and operations.
+
 ## Customer flow (v1)
 
 1. Browse **products** and **services**

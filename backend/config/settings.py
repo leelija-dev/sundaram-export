@@ -116,7 +116,7 @@ TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -183,8 +183,18 @@ else:
 COMPANY_NAME = os.environ.get("COMPANY_NAME", "Sundaram Export")
 COMPANY_NAME_INIT = " ".join([word[0].upper() for word in COMPANY_NAME.split()])
 INVOICE_NUMBER_PREFIX = os.environ.get("INVOICE_NUMBER_PREFIX", "").strip().upper()
-COMPANY_LOGO = os.environ.get("COMPANY_LOGO", "config/images/company_logo.png")
-COMPANY_LOGO_TRANSPARENT = os.environ.get("COMPANY_LOGO_TRANSPARENT", "config/images/company_logo.png")
+
+
+def _company_logo_path(env_name: str) -> str:
+    default = "config/images/company_logo.png"
+    path = os.environ.get(env_name, default).strip() or default
+    if path.endswith(".svg"):
+        path = f"{path[:-4]}.png"
+    return path
+
+
+COMPANY_LOGO = _company_logo_path("COMPANY_LOGO")
+COMPANY_LOGO_TRANSPARENT = _company_logo_path("COMPANY_LOGO_TRANSPARENT")
 COMPANY_CONTACT = os.environ.get('COMPANY_CONTACT', '8000000000')
 COMPANY_EMAIL = os.environ.get('COMPANY_EMAIL', 'test@gmail.com')
 COMPANY_TAGLINE = os.environ.get(

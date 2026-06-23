@@ -3,14 +3,27 @@ import os
 from django.contrib.staticfiles import finders
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+DEFAULT_LOGO_PATH = "config/images/company_logo.png"
+
 
 def versioned_static_url(relative_path: str) -> str:
     """Absolute static URL with file mtime cache-bust when the file exists."""
     path = relative_path.lstrip("/")
-    url = staticfiles_storage.url(path)
     found = finders.find(path)
+    use_path = path
+    if not found:
+        fallback = DEFAULT_LOGO_PATH
+        if path != fallback and finders.find(fallback):
+            use_path = fallback
+        found = finders.find(use_path)
+
+    url = staticfiles_storage.url(use_path)
+    if not url.startswith(("http://", "https://", "/")):
+        url = f"/{url.lstrip('/')}"
+
     if not found:
         return url
+
     try:
         mtime = int(os.path.getmtime(found))
     except OSError:

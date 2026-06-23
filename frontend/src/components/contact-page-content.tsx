@@ -50,7 +50,7 @@ export function ContactPageContent({ offices }: ContactPageContentProps) {
     <>
       <section className="relative overflow-hidden border-b border-border/60 bg-primary py-12 text-white sm:py-16 lg:py-20">
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.13]"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             backgroundImage: "url('/hero/logistick_hub.jpg')",
             backgroundSize: "cover",

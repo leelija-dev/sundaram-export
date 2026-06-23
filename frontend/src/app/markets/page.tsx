@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { MarketsPageContent } from "@/components/markets-page-content";
 import { MarketsPageSkeleton } from "@/components/page-skeletons";
@@ -6,7 +7,7 @@ import { site } from "@/data/site";
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Global Markets | Sundaram Export",
   description: `Export destinations served by ${site.name} — compliance, ports, and buyer networks worldwide.`,
 };

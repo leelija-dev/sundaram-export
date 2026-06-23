@@ -77,7 +77,7 @@ export function MarketsPageContent({ countries, regions }: MarketsPageContentPro
     <>
       <section className="relative overflow-hidden border-b border-border/60 bg-primary py-12 text-white sm:py-16 lg:py-20">
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             backgroundImage: "url('/hero/export-sector.jpg')",
             backgroundSize: "cover",

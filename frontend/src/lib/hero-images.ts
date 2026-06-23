@@ -12,8 +12,8 @@ export type HeroPhotoSlide = {
 };
 
 export const HERO_DEFAULT_OPACITY: Record<MapBreakpoint, number> = {
-  mobile: 0.80,
-  tablet: 0.80,
+  mobile: 0.82,
+  tablet: 0.82,
   lg: 0.82,
   desktop: 0.82,
 };
@@ -97,10 +97,10 @@ export const HERO_PHOTO_SLIDES: HeroPhotoSlide[] = [
       desktop: "76% 38%",
     },
     opacity: {
-      mobile: 0.52,
-      tablet: 0.80,
-      lg: 0.80,
-      desktop: 0.80,
+      mobile: 0.82,
+      tablet: 0.82,
+      lg: 0.82,
+      desktop: 0.82,
     },
   },
 ];

@@ -12,7 +12,7 @@ export function ProductsHeroSliceBackground({ slices }: ProductsHeroSliceBackgro
     return (
       <>
         <div
-          className="pointer-events-none absolute inset-0 opacity-40"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             backgroundImage: "url('/hero/logistick_hub.jpg')",
             backgroundSize: "cover",

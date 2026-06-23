@@ -1,8 +1,17 @@
 // src/app/not-found.tsx
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, Container } from "@/components/site-ui";
 import { HomeIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Page Not Found",
+  description: "The page you are looking for does not exist. Browse our export products, global markets, or contact the Sundaram Export trade desk.",
+  path: "/404",
+  noIndex: true,
+});
 
 export default function NotFound() {
   return (

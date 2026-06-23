@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { ProductDetailHero } from "@/components/product-detail-hero";
 import { ProductImage } from "@/components/product-image";
 import { ProductDetailSkeleton } from "@/components/page-skeletons";
+import { JsonLd } from "@/components/json-ld";
 import {
   Container,
   DetailLayout,
@@ -13,6 +15,12 @@ import {
 import { fetchProductBySlug, fetchProducts } from "@/lib/api";
 import { getProductImage } from "@/lib/product-images";
 import { formatCategoryLabel } from "@/lib/types/catalog";
+import {
+  absoluteUrl,
+  buildBreadcrumbSchema,
+  buildProductSchema,
+  createPageMetadata,
+} from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,14 +32,38 @@ export async function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await fetchProductBySlug(slug);
-  if (!product) return { title: "Product not found" };
-  return {
-    title: `${product.title} | Sundaram Export`,
-    description: product.shortDescription,
-  };
+  if (!product) {
+    return createPageMetadata({
+      title: "Product Not Found",
+      description: "The requested export product could not be found in the Sundaram Export catalog.",
+      path: `/products/${slug}`,
+      noIndex: true,
+    });
+  }
+
+  const imageSrc = getProductImage(product.slug, product.category, product.imageUrl);
+  const markets =
+    product.markets.length > 0 ? ` Active markets: ${product.markets.join(", ")}.` : "";
+  const hsCode = product.hsCode ? ` HS code: ${product.hsCode}.` : "";
+
+  return createPageMetadata({
+    title: product.title,
+    description: `${product.shortDescription || product.description}${hsCode}${markets} Request an export quote from Sundaram Export.`,
+    path: `/products/${product.slug}`,
+    image: imageSrc.startsWith("http") ? imageSrc : absoluteUrl(imageSrc),
+    imageAlt: product.title,
+    type: "article",
+    keywords: [
+      product.title,
+      `${product.category} export India`,
+      "export product specifications",
+      ...(product.hsCode ? [`HS code ${product.hsCode}`] : []),
+      ...product.markets.map((market) => `export to ${market}`),
+    ],
+  });
 }
 
 async function ProductDetailData({ slug }: { slug: string }) {
@@ -41,9 +73,21 @@ async function ProductDetailData({ slug }: { slug: string }) {
   const imageSrc = getProductImage(product.slug, product.category, product.imageUrl);
   const categoryLabel = formatCategoryLabel(product.category);
   const heroLead = product.shortDescription || product.description;
+  const structuredData = [
+    buildBreadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "Products", path: "/products" },
+      { name: product.title, path: `/products/${product.slug}` },
+    ]),
+    buildProductSchema(
+      product,
+      imageSrc.startsWith("http") ? imageSrc : absoluteUrl(imageSrc),
+    ),
+  ];
 
   return (
     <>
+      <JsonLd data={structuredData} />
       <ProductDetailHero
         title={product.title}
         lead={heroLead}

@@ -2,6 +2,7 @@
 export const site = {
   name: "Sundaram Export",
   shortName: "Sundaram",
+  logoSrc: "/images/company_logo.png",
   tagline: "Multinational export partner for premium products worldwide",
   description:
     "Agricultural commodities, textiles, engineering, and chemicals to 90+ countries — sourcing, certification, and shipment coordination from one team.",

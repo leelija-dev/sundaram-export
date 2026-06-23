@@ -233,11 +233,14 @@ export function Button({
 function Logo() {
   return (
     <Link href="/" prefetch className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
-      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/20 bg-primary-dark/50 text-xs font-bold text-white backdrop-blur-md lg:h-10 lg:w-10 lg:text-sm">
-        SE
-        <span
-          className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent ring-2 ring-primary-dark"
-          aria-hidden
+      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/20 bg-white lg:h-10 lg:w-10">
+        <Image
+          src={site.logoSrc}
+          alt={`${site.name} logo`}
+          width={40}
+          height={40}
+          className="h-full w-full object-contain p-0.5"
+          priority
         />
       </span>
       <div className="min-w-0 max-w-[9.5rem] leading-tight sm:max-w-[11rem] lg:max-w-none">

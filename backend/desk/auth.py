@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import views as auth_views
+from django.urls import reverse
 
 
 class DeskAuthenticationForm(AuthenticationForm):
@@ -48,7 +49,7 @@ class DeskAuthenticationForm(AuthenticationForm):
         if not (user.is_staff or user.is_superuser):
             raise forms.ValidationError(
                 "This account cannot access the export desk. "
-                "Enable “Staff status” in Django admin for this user.",
+                "Contact your administrator to enable staff access.",
                 code="no_desk_access",
             )
 
@@ -57,3 +58,9 @@ class DeskLoginView(auth_views.LoginView):
     template_name = "desk/login.html"
     authentication_form = DeskAuthenticationForm
     redirect_authenticated_user = True
+
+    def get_success_url(self):
+        next_url = self.request.POST.get("next") or self.request.GET.get("next")
+        if next_url and next_url.startswith("/admin"):
+            return reverse("desk:dashboard")
+        return super().get_success_url()

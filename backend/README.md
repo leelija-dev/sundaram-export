@@ -18,7 +18,7 @@ python manage.py runserver
 
 - **API:** http://127.0.0.1:8000/api/v1/health/
 - **Desk:** http://127.0.0.1:8000/desk/login/
-- **Admin:** http://127.0.0.1:8000/admin/
+- **Admin:** `/admin/` is blocked on the web — use `/desk/` for all staff work
 
 ## Environment
 

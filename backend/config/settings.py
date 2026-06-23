@@ -128,7 +128,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Export desk dashboard (/desk/) — Django admin stays at /admin/
+# Export desk dashboard (/desk/) — Django admin URL is disabled for web access
 LOGIN_URL = "/desk/login/"
 LOGIN_REDIRECT_URL = "/desk/"
 LOGOUT_REDIRECT_URL = "/desk/login/"

@@ -49,8 +49,19 @@ services:
         NEXT_PUBLIC_SITE_ADDRESS_US: ${NEXT_PUBLIC_SITE_ADDRESS_US:-2400 Port Commerce Parkway, Houston, TX 77029, USA}
         NEXT_PUBLIC_SITE_FOUNDED_YEAR: ${NEXT_PUBLIC_SITE_FOUNDED_YEAR:-1998}
     restart: unless-stopped
+    env_file:
+      - .env.docker
     environment:
       API_INTERNAL_URL: http://backend:8000/api/v1
+      NEXT_PUBLIC_API_URL: ${PUBLIC_SITE_URL:-http://localhost}/api/v1
+      NEXT_PUBLIC_MEDIA_ORIGIN: ${PUBLIC_SITE_URL:-http://localhost}
+      NEXT_PUBLIC_SITE_EMAIL: ${NEXT_PUBLIC_SITE_EMAIL:-exports@sundaramexport.com}
+      NEXT_PUBLIC_SITE_PHONE: ${NEXT_PUBLIC_SITE_PHONE:-+91 22 4000 1200}
+      NEXT_PUBLIC_SITE_PHONE_ALT: ${NEXT_PUBLIC_SITE_PHONE_ALT:-+1 (713) 555 0142}
+      NEXT_PUBLIC_SITE_ADDRESS: ${NEXT_PUBLIC_SITE_ADDRESS:-Sundaram Trade Tower, Bandra Kurla Complex, Mumbai 400051, India}
+      NEXT_PUBLIC_SITE_ADDRESS_SHORT: ${NEXT_PUBLIC_SITE_ADDRESS_SHORT:-Mumbai, India}
+      NEXT_PUBLIC_SITE_ADDRESS_US: ${NEXT_PUBLIC_SITE_ADDRESS_US:-2400 Port Commerce Parkway, Houston, TX 77029, USA}
+      NEXT_PUBLIC_SITE_FOUNDED_YEAR: ${NEXT_PUBLIC_SITE_FOUNDED_YEAR:-1998}
     depends_on:
       - backend
     expose:

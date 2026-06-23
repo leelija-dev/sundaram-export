@@ -11,18 +11,39 @@ export type {
 } from "@/lib/types/catalog";
 export { categoryLabelsFromProducts, PRODUCT_CATEGORY_LABELS } from "@/lib/types/catalog";
 
-function resolveApiBase(): string {
-  if (typeof window === "undefined") {
-    const internal = process.env.API_INTERNAL_URL?.replace(/\/$/, "");
-    if (internal) return internal;
-  }
-
-  return (
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000/api/v1"
-  );
+function readRuntimeEnv(key: string): string | undefined {
+  // Bracket access keeps server env readable at runtime in Docker/standalone
+  // (static process.env.NEXT_PUBLIC_* is inlined at build time).
+  const value = process.env[key]?.trim();
+  return value && value.length > 0 ? value : undefined;
 }
 
-const API_BASE = resolveApiBase();
+/** Resolve API base URL per request (server vs browser, dev vs Docker). */
+export function getApiBaseUrl(): string {
+  if (typeof window === "undefined") {
+    const internal = readRuntimeEnv("API_INTERNAL_URL");
+    if (internal) return internal.replace(/\/$/, "");
+
+    const configured = readRuntimeEnv("NEXT_PUBLIC_API_URL");
+    if (configured) return configured.replace(/\/$/, "");
+
+    return "http://127.0.0.1:8000/api/v1";
+  }
+
+  const configured = readRuntimeEnv("NEXT_PUBLIC_API_URL")?.replace(/\/$/, "");
+  if (configured?.startsWith("/")) return configured;
+  if (configured) {
+    try {
+      const target = new URL(configured, window.location.origin);
+      if (target.origin === window.location.origin) return configured;
+    } catch {
+      // fall through to same-origin relative path
+    }
+  }
+
+  // Behind nginx in Docker: browser calls /api/v1 on the current host.
+  return "/api/v1";
+}
 
 export const API_REVALIDATE_SECONDS = 60;
 
@@ -112,10 +133,6 @@ export type InquiryResponse = {
   };
 };
 
-export function getApiBaseUrl(): string {
-  return API_BASE;
-}
-
 export function mapIndustry(api: ApiIndustry): IndustrySector {
   return {
     slug: api.slug,
@@ -169,7 +186,7 @@ async function fetchJson<T>(path: string): Promise<T | null> {
   if (cached !== null) return cached;
 
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    const res = await fetch(`${getApiBaseUrl()}${path}`, {
       next: { revalidate: API_REVALIDATE_SECONDS, tags: [`api:${path}`] },
     });
     if (!res.ok) return null;
@@ -280,7 +297,7 @@ function buildInquiryPayload(payload: InquiryPayload): InquiryPayload {
 
 export async function submitInquiry(payload: InquiryPayload): Promise<InquiryResponse> {
   const body = buildInquiryPayload(payload);
-  const res = await fetch(`${API_BASE}/inquiries/`, {
+  const res = await fetch(`${getApiBaseUrl()}/inquiries/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

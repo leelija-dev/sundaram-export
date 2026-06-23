@@ -54,8 +54,33 @@ Browser → nginx:80
 ```
 
 - **nginx** terminates HTTP and serves uploaded media and collected static files from Docker volumes.
-- **frontend** uses `API_INTERNAL_URL` for server-side API calls inside the Docker network, and `NEXT_PUBLIC_API_URL` (baked at build time) for browser requests.
+- **frontend** uses `API_INTERNAL_URL` for server-side API calls inside the Docker network. Browser requests use same-origin `/api/v1` through nginx (no hard-coded port). Site contact fields in `.env.docker` are passed to the frontend container at **runtime** for server rendering.
 - **backend** runs migrations and `collectstatic` on startup via `docker-entrypoint.sh`.
+
+## Environment variables (frontend)
+
+Next.js handles env vars differently in production:
+
+| Variable | When read | Notes |
+|----------|-----------|-------|
+| `API_INTERNAL_URL` | Container runtime (server only) | Set in `docker-compose.yml` — `http://backend:8000/api/v1` |
+| `NEXT_PUBLIC_*` in `.env.docker` | Runtime on server + build for client | Passed via `env_file` on the frontend service |
+| `PUBLIC_SITE_URL` | Docker image **build** | Used as build arg; rebuild frontend after changing domain |
+
+**Important:** `.env.local` is for local `npm run dev` only — it is not copied into the Docker image. Use `.env.docker` with `docker compose --env-file .env.docker`.
+
+After changing `PUBLIC_SITE_URL` or any value only used at build time, rebuild:
+
+```powershell
+docker compose --env-file .env.docker build frontend
+docker compose --env-file .env.docker up -d
+```
+
+After changing site contact fields (`NEXT_PUBLIC_SITE_*`), restart the frontend container (no rebuild required):
+
+```powershell
+docker compose --env-file .env.docker up -d frontend
+```
 
 ## Configuration
 

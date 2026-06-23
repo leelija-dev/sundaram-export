@@ -11,8 +11,6 @@ import {
   type InquiryResponse,
 } from "@/lib/api";
 
-const API_BASE = getApiBaseUrl();
-
 type Paginated<T> = { results: T[] } | T[];
 
 type ApiProduct = {
@@ -30,7 +28,7 @@ type ApiProduct = {
 
 async function clientGet<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+    const res = await fetch(`${getApiBaseUrl()}${path}`, { cache: "no-store" });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {

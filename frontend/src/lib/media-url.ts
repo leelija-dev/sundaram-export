@@ -1,12 +1,26 @@
 /** Resolve Django media URLs from the catalog API into browser-ready absolute URLs. */
 
-export function getApiOrigin(): string {
-  const mediaOrigin = process.env.NEXT_PUBLIC_MEDIA_ORIGIN?.replace(/\/$/, "");
-  if (mediaOrigin) return mediaOrigin;
+function readRuntimeEnv(key: string): string | undefined {
+  const value = process.env[key]?.trim();
+  return value && value.length > 0 ? value : undefined;
+}
 
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000/api/v1";
-  return apiBase.replace(/\/api\/v1$/, "");
+export function getApiOrigin(): string {
+  const mediaOrigin = readRuntimeEnv("NEXT_PUBLIC_MEDIA_ORIGIN");
+  if (mediaOrigin) return mediaOrigin.replace(/\/$/, "");
+
+  const apiBase = readRuntimeEnv("NEXT_PUBLIC_API_URL");
+  if (apiBase) return apiBase.replace(/\/$/, "").replace(/\/api\/v1$/, "");
+
+  if (typeof window !== "undefined") {
+    // Same-origin /media/ paths work through nginx in Docker.
+    return "";
+  }
+
+  const internal = readRuntimeEnv("API_INTERNAL_URL");
+  if (internal) return internal.replace(/\/$/, "").replace(/\/api\/v1$/, "");
+
+  return "http://127.0.0.1:8000";
 }
 
 export function resolveMediaUrl(url?: string | null): string | undefined {
@@ -30,7 +44,7 @@ export function isBackendMediaUrl(src: string): boolean {
 
   try {
     const origin = getApiOrigin();
-    return src.startsWith(origin);
+    return origin.length > 0 && src.startsWith(origin);
   } catch {
     return false;
   }
